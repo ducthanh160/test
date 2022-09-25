@@ -3,24 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" integrity="sha512-+4zCK9k+qNFUR5X+cKL9EIR+ZOhtIloNl9GIKS57V1MyNsYpYcUrUeQc9vNfzsWfV28IaLL3i96P9sdNyeRssA==" crossorigin="anonymous" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
 </head>
 <body>
-    <h1>Hello Github</h1>
+    <div id="toast">
+        <!-- <div class="toast toast--success">
+            <div class="toast__icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="toast__body">
+                <h3 class="toast__title">Success</h3>
+                <p class="toast__msg">Máy vi tính kết nối thành công</p>
+            </div>
+            <div class="toast__close">
+                <i class="fas fa-times"></i>
+            </div>
+        </div>
+        <div class="toast toast--error">
+            <div class="toast__icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="toast__body">
+                <h3 class="toast__title">Error</h3>
+                <p class="toast__msg">Máy vi tính kết nối thất bại</p>
+            </div>
+            <div class="toast__close">
+                <i class="fas fa-times"></i>
+            </div>
+        </div>
+        <div class="toast toast--warning">
+            <div class="toast__icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="toast__body">
+                <h3 class="toast__title">Waring</h3>
+                <p class="toast__msg">Cảnh báo</p>
+            </div>
+            <div class="toast__close">
+                <i class="fas fa-times"></i>
+            </div>
+        </div>
+        <div class="toast toast--info">
+            <div class="toast__icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="toast__body">
+                <h3 class="toast__title">Info</h3>
+                <p class="toast__msg">Máy vi tính kết nối thành công</p>
+            </div>
+            <div class="toast__close">
+                <i class="fas fa-times"></i>
+            </div>
+        </div> -->
+    </div>
+
+<div>
+  <div onclick="showSuccessToast();" class="btn btn--success">Show success toast</div>
+  <div onclick="showErrorToast();" class="btn btn--danger">Show error toast</div>
+  <div onclick="showInfoToast();" class="btn btn--info">Show info toast</div>
+  <div onclick="showWaringToast();" class="btn btn--warn">Show waring toast</div>
+</div>
 
 <script>
-    function Random(){
-        return Math.floor(Math.random()*255);
+    function showSuccessToast() {
+      toast({
+        title: "Thành công!",
+        message: "Bạn đã đăng ký thành công tài khoản tại F8.",
+        type: "success",
+        duration: 5000
+      });
     }
-    function RanColor(){
-        const r = Random();
-        const g = Random();
-        const b = Random();
-        return `rgb(${r}, ${g}, ${b})`;
+  
+    function showErrorToast() {
+      toast({
+        title: "Thất bại!",
+        message: "Có lỗi xảy ra, vui lòng liên hệ quản trị viên.",
+        type: "error",
+        duration: 5000
+      });
     }
-    const randomColor = RanColor();
-    console.log(randomColor);
-</script>
+
+    function showWaringToast() {
+      toast({
+        title: "Cảnh báo",
+        message: "Có lỗi xảy ra, vui lòng liên hệ quản trị viên.",
+        type: "warning",
+        duration: 5000
+      });
+    }
+
+    function showInfoToast() {
+      toast({
+        title: "Cảnh báo",
+        message: "Có lỗi xảy ra, vui lòng liên hệ quản trị viên.",
+        type: "info",
+        duration: 5000
+      });
+    }
+  </script>
+<script src="app.js"></script>
 </body>
 </html>
