@@ -110,11 +110,25 @@ a.sidebar-link:hover {
     padding: 4px;
     position: absolute;
     right: 1.5rem;
-    top: 0.8125rem;
+    top: 0.9375rem;
     transform: rotate(45deg);
     transition: all 0.2s ease-out;
 }
 #sidebar.show .sidebar-link[data-bs-toggle="collapse"].collapsed::after {
     transform: rotate(135deg);
     transition: all 0.2s ease-out;
+}
+
+.wrapper {
+    background: rgb(237, 240, 247);
+}
+.contact-form {
+    margin-top: 8px;
+    width: 100%;
+    padding: 10px;
+    background: #fff;
+    border-radius: 4px;
+    border-top: 3px solid;
+    border-top-color: var(--bs-success);
+    box-shadow: 0 2px 5px 0 rgba(51, 62, 73, 0.1);
 }
