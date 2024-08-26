@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import PhongBan from "./component/phongban";
-import BangCap from "./component/bangcap";
+import PhongBan from "./view/phongban";
+import BangCap from "./view/bangcap";
 import "./App.css";
 
 function App() {
@@ -72,7 +72,7 @@ function App() {
                             <li className="sidebar-item">
                                 <a href="" className="sidebar-link">
                                     <i className="fa-regular fa-user"></i>
-                                    <span>User</span>
+                                    <span>Chat</span>
                                 </a>
                             </li>
                             <li className="sidebar-item">
@@ -85,7 +85,7 @@ function App() {
                                     aria-controls="auth"
                                 >
                                     <i className="fa-solid fa-heart"></i>
-                                    <span>Danh sách</span>
+                                    <span>Nhân viên</span>
                                 </a>
                                 <ul
                                     id="auth"

@@ -44,7 +44,6 @@ a {
 .main {
     min-height: 100vh;
     width: 100%;
-    background: #ccc;
 }
 
 #sidebar {
@@ -131,4 +130,13 @@ a.sidebar-link:hover {
     border-top: 3px solid;
     border-top-color: var(--bs-success);
     box-shadow: 0 2px 5px 0 rgba(51, 62, 73, 0.1);
+}
+.avatar {
+    /* width: 100%; */
+    height: 150px;
+    object-fit: cover;
+}
+.item {
+    border: 1px solid #e2dfda;
+    background: #fff;
 }
