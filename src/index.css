@@ -131,17 +131,29 @@ a.sidebar-link:hover {
     border-top-color: var(--bs-success);
     box-shadow: 0 2px 5px 0 rgba(51, 62, 73, 0.1);
 }
-.avatar {
-    /* width: 100%; */
+.cover__avatar {
     height: 150px;
+}
+.avatar {
+    display: block;
+    height: 100%;
     object-fit: cover;
 }
 .item {
     border: 1px solid #e2dfda;
     background: #fff;
 }
+.item:hover {
+    border-color: transparent;
+    background: #fff;
+    box-shadow: 0px 18px 36px 0px rgba(0, 0, 0, 0.05);
+    cursor: pointer;
+}
 .info {
     padding: 0.625rem;
+}
+.employee_name {
+    padding-right: 5px;
 }
 .position {
     margin: 5px 0px;
@@ -155,9 +167,41 @@ a.sidebar-link:hover {
 .desc {
     margin: 5px 0;
 }
+.desc:last-child {
+    margin-bottom: 0;
+}
 .email,
 .phone {
     margin-left: 12px;
     font-size: 1.2rem;
     color: rgb(129, 137, 148);
+}
+
+.icon-container {
+    position: relative; /* Để định vị "Xem thông tin" tương đối với container của icon */
+}
+
+.hover-text {
+    visibility: hidden; /* Ẩn mặc định */
+    position: absolute;
+    bottom: 100%; /* Đặt dòng chữ ngay bên dưới icon */
+    left: 50%; /* Đặt ở giữa theo chiều ngang */
+    transform: translateX(-50%); /* Dịch chuyển để căn giữa */
+    background-color: rgba(0, 0, 0, 0.7); /* Nền mờ */
+    color: white; /* Màu chữ trắng */
+    padding: 5px 10px; /* Thêm khoảng đệm cho chữ */
+    border-radius: 3px; /* Bo góc */
+    font-size: 0.625rem; /* Kích thước chữ nhỏ hơn một chút */
+    white-space: nowrap; /* Đảm bảo dòng chữ không bị ngắt dòng */
+    z-index: 1; /* Đảm bảo dòng chữ nằm trên icon */
+}
+
+.icon-container:hover .hover-text {
+    visibility: visible; /* Hiển thị dòng chữ khi hover */
+}
+
+@media (max-width: 834px) {
+    .info {
+        padding: 0.625rem 0.625rem 0rem 0.625rem;
+    }
 }
