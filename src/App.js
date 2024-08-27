@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import PhongBan from "./view/phongban";
 import BangCap from "./view/bangcap";
+import DsNhanVien from "./view/dsnhanvien";
 import "./App.css";
 
 function App() {
@@ -94,7 +95,7 @@ function App() {
                                 >
                                     <li className="sidebar-item">
                                         <a
-                                            href="/phongban"
+                                            href="/dsnhanvien"
                                             className="sidebar-link"
                                         >
                                             Danh sách nhân viên
@@ -111,7 +112,10 @@ function App() {
                         }`}
                     >
                         <Routes>
-                            <Route path="/phongban" element={<PhongBan />} />
+                            <Route
+                                path="/dsnhanvien"
+                                element={<DsNhanVien />}
+                            />
                             <Route path="/bangcap" element={<BangCap />} />
                             <Route path="/" element={<phongban />} />{" "}
                             {/* Trang chủ hoặc điều hướng mặc định */}

@@ -140,3 +140,24 @@ a.sidebar-link:hover {
     border: 1px solid #e2dfda;
     background: #fff;
 }
+.info {
+    padding: 0.625rem;
+}
+.position {
+    margin: 5px 0px;
+    font-size: 1.4rem;
+    color: rgb(129, 137, 148);
+}
+.info .icon {
+    font-size: 1.2rem;
+    color: rgb(115, 107, 148);
+}
+.desc {
+    margin: 5px 0;
+}
+.email,
+.phone {
+    margin-left: 12px;
+    font-size: 1.2rem;
+    color: rgb(129, 137, 148);
+}
