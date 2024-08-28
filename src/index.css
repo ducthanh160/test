@@ -152,11 +152,8 @@ a.sidebar-link:hover {
 .info {
     padding: 0.625rem;
 }
-.employee_name {
-    padding-right: 5px;
-}
 .position {
-    margin: 5px 0px;
+    margin: 5px 0;
     font-size: 1.4rem;
     color: rgb(129, 137, 148);
 }
@@ -165,10 +162,12 @@ a.sidebar-link:hover {
     color: rgb(115, 107, 148);
 }
 .desc {
-    margin: 5px 0;
-}
-.desc:last-child {
-    margin-bottom: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 5px;
 }
 .email,
 .phone {
@@ -178,26 +177,55 @@ a.sidebar-link:hover {
 }
 
 .icon-container {
-    position: relative; /* Để định vị "Xem thông tin" tương đối với container của icon */
+    padding-left: 7px;
+    position: relative;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 100%;
+    background-color: white;
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+    border-radius: 4px;
+    padding: 10px;
+}
+
+.dropdown-content div {
+    display: flex;
+    align-items: center;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+.dropdown-content div + .dropdown-content div {
+    border-bottom: 1px solid red;
+}
+
+.dropdown-content div:hover {
+    background-color: #f1f1f1;
+}
+
+.icon-container:hover .dropdown-content {
+    display: block;
 }
 
 .hover-text {
-    visibility: hidden; /* Ẩn mặc định */
-    position: absolute;
-    bottom: 100%; /* Đặt dòng chữ ngay bên dưới icon */
-    left: 50%; /* Đặt ở giữa theo chiều ngang */
-    transform: translateX(-50%); /* Dịch chuyển để căn giữa */
-    background-color: rgba(0, 0, 0, 0.7); /* Nền mờ */
-    color: white; /* Màu chữ trắng */
-    padding: 5px 10px; /* Thêm khoảng đệm cho chữ */
-    border-radius: 3px; /* Bo góc */
-    font-size: 0.625rem; /* Kích thước chữ nhỏ hơn một chút */
-    white-space: nowrap; /* Đảm bảo dòng chữ không bị ngắt dòng */
-    z-index: 1; /* Đảm bảo dòng chữ nằm trên icon */
+    white-space: nowrap;
+    margin-left: 10px;
 }
 
-.icon-container:hover .hover-text {
-    visibility: visible; /* Hiển thị dòng chữ khi hover */
+.dropdown-content_icon,
+.hover-text {
+    font-size: 0.875rem;
+}
+
+.staff-img {
+    width: 150px;
+    height: 200px;
+    object-fit: cover;
 }
 
 @media (max-width: 834px) {
