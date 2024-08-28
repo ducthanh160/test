@@ -1,0 +1,148 @@
+.wrapper {
+    background: rgb(237, 240, 247);
+}
+.contact-form {
+    margin-top: 8px;
+    width: 100%;
+    padding: 10px;
+    background: #fff;
+    border-radius: 4px;
+    border-top: 3px solid;
+    border-top-color: var(--bs-success);
+    box-shadow: 0 2px 5px 0 rgba(51, 62, 73, 0.1);
+}
+.cover__avatar {
+    height: 150px;
+}
+.avatar {
+    display: block;
+    height: 100%;
+    object-fit: cover;
+}
+.item {
+    border: 1px solid #e2dfda;
+    background: #fff;
+}
+.item:hover {
+    border-color: transparent;
+    background: #fff;
+    box-shadow: 0px 18px 36px 0px rgba(0, 0, 0, 0.05);
+    cursor: pointer;
+}
+.info {
+    padding: 0.625rem;
+}
+.position {
+    margin: 5px 0;
+    font-size: 1.4rem;
+    color: rgb(129, 137, 148);
+}
+.info .icon {
+    font-size: 1.2rem;
+    color: rgb(115, 107, 148);
+}
+.desc {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 5px;
+}
+.email,
+.phone {
+    margin-left: 12px;
+    font-size: 1.2rem;
+    color: rgb(129, 137, 148);
+}
+
+.icon-container {
+    padding-left: 7px;
+    position: relative;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 100%;
+    background-color: white;
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+    border-radius: 4px;
+    padding: 10px;
+}
+
+.dropdown-content div {
+    display: flex;
+    align-items: center;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+.dropdown-content div + .dropdown-content div {
+    border-bottom: 1px solid red;
+}
+
+.dropdown-content div:hover {
+    background-color: #f1f1f1;
+}
+
+.icon-container:hover .dropdown-content {
+    display: block;
+}
+
+.hover-text {
+    white-space: nowrap;
+    margin-left: 10px;
+}
+
+.dropdown-content_icon,
+.hover-text {
+    font-size: 0.875rem;
+}
+
+.staff-img {
+    width: 220px;
+    height: 100%;
+    object-fit: cover;
+}
+
+.modal {
+    --bs-modal-margin: 3.75rem;
+}
+.modal-dialog {
+    pointer-events: none;
+}
+
+.staff-info {
+    display: flex;
+    column-gap: 70px;
+}
+.staff-info_text p {
+    font-size: 1.2rem;
+    line-height: 2rem;
+}
+
+@media (max-width: 834px) {
+    .info {
+        padding: 0.625rem 0.625rem 0rem 0.625rem;
+    }
+}
+
+@media (max-width: 1199px) {
+    .staff-img {
+        width: 200px;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .staff-info {
+        display: flex;
+        column-gap: 50px;
+    }
+
+    .modal-xl {
+        --bs-modal-width: 900px;
+    }
+}
