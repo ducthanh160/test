@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import PhongBan from "./view/phongban";
 import BangCap from "./view/bangcap";
 import DsNhanVien from "./view/dsnhanvien";
+import ThemNV from "./view/themnhanvien";
 import "./App.css";
 
 function App() {
@@ -95,6 +96,14 @@ function App() {
                                 >
                                     <li className="sidebar-item">
                                         <a
+                                            href="/themnv"
+                                            className="sidebar-link"
+                                        >
+                                            Thêm nhân viên
+                                        </a>
+                                    </li>
+                                    <li className="sidebar-item">
+                                        <a
                                             href="/dsnhanvien"
                                             className="sidebar-link"
                                         >
@@ -116,6 +125,7 @@ function App() {
                                 path="/dsnhanvien"
                                 element={<DsNhanVien />}
                             />
+                            <Route path="/themnv" element={<ThemNV />} />
                             <Route path="/bangcap" element={<BangCap />} />
                             <Route path="/" element={<phongban />} />{" "}
                             {/* Trang chủ hoặc điều hướng mặc định */}

@@ -6,7 +6,7 @@ html {
 }
 
 body {
-    font-size: 1.6rem;
+    font-size: 1rem;
 }
 a {
     text-decoration: none;
@@ -56,8 +56,8 @@ a {
     background: #0e223e;
 }
 #sidebar.show {
-    width: 200px;
-    min-width: 200px;
+    width: 210px;
+    min-width: 210px;
 }
 #sidebar:not(.show) a.sidebar-link span {
     display: none;
@@ -116,4 +116,14 @@ a.sidebar-link:hover {
 #sidebar.show .sidebar-link[data-bs-toggle="collapse"].collapsed::after {
     transform: rotate(135deg);
     transition: all 0.2s ease-out;
+}
+
+.sidebar-dropdown {
+    background-color: #102c4b;
+}
+.sidebar-dropdown .sidebar-link {
+    color: rgb(158, 176, 184);
+}
+.sidebar-dropdown .sidebar-link:hover {
+    color: #fff;
 }
