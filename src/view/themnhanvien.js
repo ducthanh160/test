@@ -1,11 +1,156 @@
+import React, { useState, useEffect } from "react";
+import { CKEditor } from "@ckeditor/ckeditor5-react";
+import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
+import useMyComponentState from "../hooks/useMyComponentState.js";
+import {
+    handleGetInputValue,
+    getDateCurrent,
+    config,
+    transformPhongBanData,
+    transformChucVuData,
+} from "../utils/utils.js";
+import { fetchGetCode, createCategory } from "../api/service";
+import useFetchData from "../hooks/useFetchData";
+
 function ThemNV() {
+    const [selectedPhongBan, setSelectedPhongBan] = useState("");
+    const [selectedChucVu, setSelectedChucVu] = useState("");
+    const [selectedTrinhDo, setSelectedTrinhDo] = useState("");
+
+    const {
+        data: phongBanList,
+        error: phongBanError,
+        loading: phongBanLoading,
+    } = useFetchData("PhongBan", "DanhSachPB");
+    const {
+        data: chucVuList,
+        error: chucVuError,
+        loading: chucVuLoading,
+    } = useFetchData("ChucVu", "DanhSachCV");
+    const {
+        type,
+        setType,
+        code,
+        setCode,
+        error,
+        setError,
+        inputRefs,
+        editorData,
+        handleEditorChange,
+        codeId,
+        setCodeId,
+        nameId,
+        setNameId,
+        modalTitle,
+        setModalTitle,
+        labelTitle,
+        setLabelTitle,
+        placeholderCode,
+        setPlaceholderCode,
+        placeholderName,
+        setPlaceholderName,
+        name,
+        setName,
+        nameInput,
+        setNameInput,
+    } = useMyComponentState();
+
+    // hàm lấy mã
+    const handleAddClick = async (type) => {
+        setType(type);
+        // Lấy config dựa trên loại (phongban, chucvu, ...)
+        const configData = config[type] || {};
+        setCodeId(configData.codeId || "");
+        setNameId(configData.nameId || "");
+        setModalTitle(configData.modalTitle || "");
+        setLabelTitle(configData.labelTitle || "");
+        setName(configData.name || "");
+        setPlaceholderCode(configData.placeholderCode || "");
+        setPlaceholderName(configData.placeholderName || "");
+
+        try {
+            let data;
+            // Gọi API dựa trên loại được chọn
+            if (type === "phongban") {
+                data = await fetchGetCode("PhongBan", "MaPB");
+            } else if (type === "chucvu") {
+                data = await fetchGetCode("ChucVu", "MaCV");
+            }
+
+            // Cập nhật mã code nếu dữ liệu và mã code là hợp lệ
+            if (data && data.code) {
+                setCode(data.code);
+            }
+        } catch (error) {
+            console.error("Lỗi khi lấy dữ liệu từ API:", error);
+            setError(error.message);
+        }
+    };
+
+    // hàm thêm
+    const handleGetValue = async () => {
+        try {
+            // Lấy dữ liệu từ các input và editor
+            const newData = handleGetInputValue(inputRefs, editorData);
+
+            // Kiểm tra xem loại dữ liệu đã được xác định chưa
+            if (!type) {
+                console.error("Loại dữ liệu không xác định.");
+                return;
+            }
+
+            // Chỉnh sửa dữ liệu dựa trên loại
+            let modifiedData;
+            if (type === "phongban") {
+                modifiedData = transformPhongBanData(newData);
+            } else if (type === "chucvu") {
+                modifiedData = transformChucVuData(newData);
+            }
+
+            // Gọi hàm thêm dữ liệu vào database dựa trên loại đã chọn
+            let result;
+            if (type === "phongban") {
+                result = await createCategory(
+                    "PhongBan",
+                    "TaoPB",
+                    modifiedData
+                );
+            } else if (type === "chucvu") {
+                result = await createCategory("ChucVu", "TaoCV", modifiedData);
+            }
+
+            // Kiểm tra kết quả và thông báo cho người dùng
+            if (result.success) {
+                console.log("Thêm thành công:", result.data);
+
+                // Cập nhật mã mới và làm trống tên và mô tả
+                handleAddClick(type); // Cập nhật mã mới
+                setNameInput(""); // Làm trống tên
+                handleEditorChange(null, { getData: () => "" }); // Làm trống mô tả
+            } else {
+                console.error("Thêm thất bại:", result.message);
+            }
+        } catch (error) {
+            console.error("Lỗi khi thêm dữ liệu:", error);
+        }
+    };
+
+    const handleSelectChange = (setter, label) => (event) => {
+        setter(event.target.value);
+        console.log(`${label} được chọn:`, event.target.value);
+    };
+
     return (
         <div className="wrapper p-3">
             <div className="contact-form ">
                 <h3 className="fs-3">Thêm mới nhân viên</h3>
                 <div className="row">
+                    {/* MANV */}
                     <div className="form-group col-md-6 mt-3">
-                        <label for="MANV" className="fw-bold text-dark pb-2">
+                        <label
+                            htmlFor="MANV"
+                            className="fw-bold text-dark pb-2"
+                        >
                             Mã nhân viên
                         </label>
                         <input
@@ -15,8 +160,12 @@ function ThemNV() {
                         />
                     </div>
 
+                    {/* anh */}
                     <div className="mt-3 form-group col-md-6">
-                        <label className="fw-bold text-dark pb-2" for="image">
+                        <label
+                            className="fw-bold text-dark pb-2"
+                            htmlFor="image"
+                        >
                             Ảnh 3x4 (nếu có):
                         </label>
                         <input
@@ -28,7 +177,10 @@ function ThemNV() {
                     </div>
 
                     <div className="form-group col-md-6 mt-3">
-                        <label for="TENNV" className="fw-bold text-dark pb-2">
+                        <label
+                            htmlFor="TENNV"
+                            className="fw-bold text-dark pb-2"
+                        >
                             Tên nhân viên:
                         </label>
                         <input
@@ -40,7 +192,7 @@ function ThemNV() {
 
                     <div className="mt-3 form-group col-md-6">
                         <label
-                            for="GIOITINH"
+                            htmlFor="GIOITINH"
                             className="fw-bold text-dark pb-2"
                         >
                             Giới tính:
@@ -49,8 +201,9 @@ function ThemNV() {
                             id="GIOITINH"
                             className="form-select"
                             aria-label="Default select example"
+                            defaultValue=""
                         >
-                            <option value="" disabled selected>
+                            <option value="" disabled>
                                 --- Chọn giới tính ---
                             </option>
                             <option value="Nam">Nam</option>
@@ -58,18 +211,22 @@ function ThemNV() {
                             <option value="Khác">Khác</option>
                         </select>
                     </div>
-
+                    {/* hon nhan */}
                     <div className="mt-3 form-group col-md-6">
-                        <label for="HONNHAN" className="fw-bold text-dark pb-2">
+                        <label
+                            htmlFor="HONNHAN"
+                            className="fw-bold text-dark pb-2"
+                        >
                             Hôn nhân
                         </label>
                         <select
                             id="HONNHAN"
                             className="form-select"
                             aria-label="Default select example"
+                            defaultValue=""
                         >
-                            <option value="" disabled selected>
-                                --- Chọn tình trạng hôn nhân ---
+                            <option value="" disabled>
+                                --- Tình trạng hôn nhân ---
                             </option>
                             <option value="">Độc thân</option>
                             <option value="">Đã kết hôn</option>
@@ -78,8 +235,11 @@ function ThemNV() {
 
                     {/* Ngay sinh */}
                     <div className="form-group mt-3 col-md-6">
-                        <label class="fw-bold text-dark pb-2" for="NGAYSINH">
-                            Ngày sinh <span class="text-danger">*</span>
+                        <label
+                            className="fw-bold text-dark pb-2"
+                            htmlFor="NGAYSINH"
+                        >
+                            Ngày sinh
                         </label>
                         <input
                             type="date"
@@ -89,7 +249,10 @@ function ThemNV() {
                     </div>
 
                     <div className="form-group col-md-6 mt-3">
-                        <label for="CCCD" className="fw-bold text-dark pb-2">
+                        <label
+                            htmlFor="CCCD"
+                            className="fw-bold text-dark pb-2"
+                        >
                             Số CCCD
                         </label>
                         <input
@@ -101,7 +264,7 @@ function ThemNV() {
 
                     <div className="form-group col-md-6 mt-3">
                         <label
-                            for="DIENTHOAI"
+                            htmlFor="DIENTHOAI"
                             className="fw-bold text-dark pb-2"
                         >
                             Số điện thoại
@@ -115,8 +278,11 @@ function ThemNV() {
 
                     {/* Ngay cap */}
                     <div className="form-group mt-3 col-md-6">
-                        <label className="fw-bold text-dark pb-2" for="NGAYCAP">
-                            Ngày cấp <span class="text-danger">*</span>
+                        <label
+                            className="fw-bold text-dark pb-2"
+                            htmlFor="NGAYCAP"
+                        >
+                            Ngày cấp
                         </label>
                         <input
                             type="date"
@@ -126,7 +292,10 @@ function ThemNV() {
                     </div>
 
                     <div className="mt-3 form-group col-md-6">
-                        <label className="fw-bold text-dark pb-2" for="NOISINH">
+                        <label
+                            className="fw-bold text-dark pb-2"
+                            htmlFor="NOISINH"
+                        >
                             Nơi sinh
                         </label>
                         <textarea
@@ -136,20 +305,22 @@ function ThemNV() {
                     </div>
 
                     <div className="mt-3 form-group col-md-6">
-                        <label className="fw-bold text-dark pb-2" for="NOICAP">
+                        <label
+                            className="fw-bold text-dark pb-2"
+                            htmlFor="NOICAP"
+                        >
                             Nơi cấp
                         </label>
                         <textarea
                             id="NOICAP"
                             className="form-control"
-                            formControlName="NOICAP"
                         ></textarea>
                     </div>
 
                     <div className="mt-3 form-group col-md-6">
                         <label
                             className="fw-bold text-dark pb-2"
-                            for="NGUYENQUAN"
+                            htmlFor="NGUYENQUAN"
                         >
                             Nguyên quán
                         </label>
@@ -162,7 +333,7 @@ function ThemNV() {
                     {/* quoc tich */}
                     <div className="mt-3 form-group col-md-6">
                         <label
-                            for="QUOCTICH"
+                            htmlFor="QUOCTICH"
                             className="fw-bold text-dark pb-2"
                         >
                             Quốc tịch
@@ -172,7 +343,7 @@ function ThemNV() {
                             className="form-select"
                             aria-label="Default select example"
                         >
-                            <option value="" disabled selected>
+                            <option value="" disabled>
                                 --- Chọn quốc tịch ---
                             </option>
                             <option value=""></option>
@@ -180,7 +351,10 @@ function ThemNV() {
                     </div>
 
                     <div className="mt-3 form-group col-md-6">
-                        <label className="fw-bold text-dark pb-2" for="HOKHAU">
+                        <label
+                            className="fw-bold text-dark pb-2"
+                            htmlFor="HOKHAU"
+                        >
                             Hộ khẩu
                         </label>
                         <textarea
@@ -188,17 +362,23 @@ function ThemNV() {
                             className="form-control"
                         ></textarea>
                     </div>
-
+                    {/* ton giao */}
                     <div className="mt-3 form-group col-md-6">
-                        <label className="fw-bold text-dark pb-2" for="TONGIAO">
+                        <label
+                            className="fw-bold text-dark pb-2"
+                            htmlFor="TONGIAO"
+                        >
                             Tôn giáo
                         </label>
                         <select
                             id="TONGIAO"
                             className="form-select"
                             aria-label="Default select example"
+                            defaultValue=""
                         >
-                            <option value="">--- Chọn tôn giáo ---</option>
+                            <option value="" disabled>
+                                --- Chọn tôn giáo ---
+                            </option>
                             <option value="Phật giáo">Phật giáo</option>
                             <option value="Thiên chúa giáo">
                                 Thiên chúa giáo
@@ -208,131 +388,237 @@ function ThemNV() {
                     </div>
 
                     <div className="mt-3 form-group col-md-6">
-                        <label className="fw-bold text-dark pb-2" for="TAMTRU">
+                        <label
+                            className="fw-bold text-dark pb-2"
+                            htmlFor="TAMTRU"
+                        >
                             Tạm trú:
                         </label>
                         <textarea
                             id="TAMTRU"
                             className="form-control"
-                            formControlName="TAMTRU"
                         ></textarea>
                     </div>
 
+                    {/* phong ban */}
                     <div className="mt-3 form-group col-md-6">
-                        <label
-                            for="PHONGBAN"
-                            className="fw-bold text-dark pb-2"
-                        >
-                            Phòng ban
-                        </label>
+                        <div className="pb-2 d-flex align-items-center justify-content-between">
+                            <label
+                                htmlFor="PHONGBAN"
+                                className="fw-bold text-dark"
+                            >
+                                Phòng ban
+                            </label>
+                            <div className="d-flex gap-2">
+                                <i
+                                    className="fa-solid fa-plus text-success"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#staticBackdrop"
+                                    onClick={() => handleAddClick("phongban")}
+                                ></i>
+                                <i className="fa-solid fa-pen text-warning"></i>
+                            </div>
+                        </div>
                         <select
                             id="PHONGBAN"
                             className="form-select"
                             aria-label="Default select example"
+                            value={selectedPhongBan}
+                            onChange={handleSelectChange(
+                                setSelectedPhongBan,
+                                "Phòng ban"
+                            )}
                         >
-                            <option value="" disabled selected>
+                            <option value="" disabled>
                                 --- Chọn phòng ban ---
                             </option>
-                            <option value=""></option>
+                            {phongBanList.map((pb) => (
+                                <option key={pb.MAPB} value={pb.MAPB}>
+                                    {pb.TENPB}
+                                </option>
+                            ))}
                         </select>
                     </div>
 
+                    {/* dan toc */}
                     <div className="mt-3 form-group col-md-6">
-                        <label for="DANTOC" className="fw-bold text-dark pb-2">
+                        <label
+                            htmlFor="DANTOC"
+                            className="fw-bold text-dark pb-2"
+                        >
                             Dân tộc
                         </label>
                         <select
                             id="DANTOC"
                             className="form-select"
                             aria-label="Default select example"
+                            defaultValue=""
                         >
-                            <option value="" disabled selected>
+                            <option value="" disabled>
                                 --- Chọn dân tộc ---
                             </option>
                             <option value=""></option>
                         </select>
                     </div>
 
+                    {/* chuc vu */}
                     <div className="mt-3 form-group col-md-6">
-                        <label for="CHUCVU" className="fw-bold text-dark pb-2">
-                            Chức vụ
-                        </label>
+                        <div className="pb-2 d-flex align-items-center justify-content-between">
+                            <label
+                                htmlFor="CHUCVU"
+                                className="fw-bold text-dark"
+                            >
+                                Chức vụ
+                            </label>
+                            <div className="d-flex gap-2">
+                                <i
+                                    className="fa-solid fa-plus text-success"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#staticBackdrop"
+                                    onClick={() => handleAddClick("chucvu")}
+                                ></i>
+                                <i className="fa-solid fa-pen text-warning"></i>
+                            </div>
+                        </div>
                         <select
                             id="CHUCVU"
                             className="form-select"
                             aria-label="Default select example"
+                            value={selectedChucVu}
+                            onChange={handleSelectChange(
+                                setSelectedChucVu,
+                                "Chức vụ"
+                            )}
                         >
-                            <option value="" disabled selected>
+                            <option value="" disabled>
                                 --- Chọn chức vụ ---
                             </option>
-                            <option value=""></option>
+                            {chucVuList.map((cv) => (
+                                <option key={cv.MACV} value={cv.MACV}>
+                                    {cv.TENCV}
+                                </option>
+                            ))}
                         </select>
                     </div>
-
+                    {/* loai nv */}
                     <div className="mt-3 form-group col-md-6">
-                        <label
-                            for="LOAINHANVIEN"
-                            className="fw-bold text-dark pb-2"
-                        >
-                            Loại nhân viên
-                        </label>
+                        <div className="pb-2 d-flex align-items-center justify-content-between">
+                            <label
+                                htmlFor="LOAINV"
+                                className="fw-bold text-dark"
+                            >
+                                Loại nhân viên
+                            </label>
+                            <div className="d-flex gap-2">
+                                <i
+                                    className="fa-solid fa-plus text-success"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#staticBackdrop"
+                                    onClick={() => handleAddClick("loainv")}
+                                ></i>
+                                <i className="fa-solid fa-pen text-warning"></i>
+                            </div>
+                        </div>
                         <select
                             id="LOAINHANVIEN"
                             className="form-select"
                             aria-label="Default select example"
+                            defaultValue=""
                         >
-                            <option value="" disabled selected>
+                            <option value="" disabled>
                                 --- Chọn loại nhân viên ---
                             </option>
                             <option value=""></option>
                         </select>
                     </div>
-
+                    {/* trinh do */}
                     <div className="mt-3 form-group col-md-6">
-                        <label for="TRINHDO" className="fw-bold text-dark pb-2">
-                            Trình độ
-                        </label>
+                        <div className="pb-2 d-flex align-items-center justify-content-between">
+                            <label
+                                htmlFor="TRINHDO"
+                                className="fw-bold text-dark"
+                            >
+                                Trình độ
+                            </label>
+                            <div className="d-flex gap-2">
+                                <i
+                                    className="fa-solid fa-plus text-success"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#staticBackdrop"
+                                    onClick={() => handleAddClick("trinhdo")}
+                                ></i>
+                                <i className="fa-solid fa-pen text-warning"></i>
+                            </div>
+                        </div>
                         <select
                             id="TRINHDO"
                             className="form-select"
                             aria-label="Default select example"
+                            defaultValue=""
                         >
-                            <option value="" disabled selected>
+                            <option value="" disabled>
                                 --- Chọn trình độ ---
                             </option>
                             <option value=""></option>
                         </select>
                     </div>
-
+                    {/* bang cap */}
                     <div className="mt-3 form-group col-md-6">
-                        <label for="BANGCAP" className="fw-bold text-dark pb-2">
-                            Bằng cấp
-                        </label>
+                        <div className="pb-2 d-flex align-items-center justify-content-between">
+                            <label
+                                htmlFor="BANGCAP"
+                                className="fw-bold text-dark"
+                            >
+                                Bằng cấp
+                            </label>
+                            <div className="d-flex gap-2">
+                                <i
+                                    className="fa-solid fa-plus text-success"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#staticBackdrop"
+                                    onClick={() => handleAddClick("bangcap")}
+                                ></i>
+                                <i className="fa-solid fa-pen text-warning"></i>
+                            </div>
+                        </div>
                         <select
                             id="BANGCAP"
                             className="form-select"
                             aria-label="Default select example"
+                            defaultValue=""
                         >
-                            <option value="" disabled selected>
+                            <option value="" disabled>
                                 --- Chọn bằng cấp ---
                             </option>
                             <option value=""></option>
                         </select>
                     </div>
-
+                    {/* chuyen mon */}
                     <div className="mt-3 form-group col-md-6">
-                        <label
-                            for="CHUYENMON"
-                            className="fw-bold text-dark pb-2"
-                        >
-                            Chuyên môn
-                        </label>
+                        <div className="pb-2 d-flex align-items-center justify-content-between">
+                            <label
+                                htmlFor="CHUYENMON"
+                                className="fw-bold text-dark"
+                            >
+                                Chuyên môn
+                            </label>
+                            <div className="d-flex gap-2">
+                                <i
+                                    className="fa-solid fa-plus text-success"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#staticBackdrop"
+                                    onClick={() => handleAddClick("chuyenmon")}
+                                ></i>
+                                <i className="fa-solid fa-pen text-warning"></i>
+                            </div>
+                        </div>
                         <select
                             id="CHUYENMON"
                             className="form-select"
                             aria-label="Default select example"
+                            defaultValue=""
                         >
-                            <option value="" disabled selected>
+                            <option value="" disabled>
                                 --- Chọn chuyên môn ---
                             </option>
                             <option value=""></option>
@@ -341,7 +627,7 @@ function ThemNV() {
 
                     <div className="mt-3 form-group col-md-6">
                         <label
-                            for="TRANGTHAI"
+                            htmlFor="TRANGTHAI"
                             className="fw-bold text-dark pb-2"
                         >
                             Trạng thái
@@ -350,8 +636,9 @@ function ThemNV() {
                             id="TRANGTHAI"
                             className="form-select"
                             aria-label="Default select example"
+                            defaultValue=""
                         >
-                            <option value="" disabled selected>
+                            <option value="" disabled>
                                 --- Chọn trạng thái ---
                             </option>
                             <option value=""></option>
@@ -367,6 +654,149 @@ function ThemNV() {
                         ></i>
                         Thêm mới nhân viên
                     </button>
+                </div>
+
+                <div
+                    className="modal fade"
+                    id="staticBackdrop"
+                    data-bs-backdrop="static"
+                    data-bs-keyboard="false"
+                    tabIndex="-1"
+                    aria-labelledby="staticBackdropLabel"
+                    aria-hidden="true"
+                >
+                    <div className="modal-dialog modal-xl">
+                        <div className="modal-content">
+                            <div className="modal-header">
+                                <h1
+                                    className="modal-title fs-5"
+                                    id="staticBackdropLabel"
+                                >
+                                    {modalTitle}
+                                </h1>
+                                <button
+                                    type="button"
+                                    className="btn-close"
+                                    data-bs-dismiss="modal"
+                                    aria-label="Close"
+                                ></button>
+                            </div>
+                            <div className="modal-body">
+                                <div className="row">
+                                    {/* Mã */}
+                                    <div className="form-group col-md-6">
+                                        <label
+                                            htmlFor={codeId}
+                                            className="fw-bold text-dark pb-2"
+                                        >
+                                            {labelTitle}
+                                        </label>
+                                        <input
+                                            id={codeId}
+                                            ref={inputRefs.inputCodeRef}
+                                            className="form-control"
+                                            placeholder={placeholderCode}
+                                            value={code} // Gán giá trị từ state
+                                            onChange={(e) =>
+                                                setCode(e.target.value)
+                                            } // Cập nhật state khi giá trị input thay đổi
+                                            disabled
+                                        />
+                                    </div>
+                                    {/* Tên */}
+                                    <div className="form-group col-md-6">
+                                        <label
+                                            htmlFor={nameId}
+                                            className="fw-bold text-dark pb-2"
+                                        >
+                                            {name}
+                                        </label>
+                                        <input
+                                            id={nameId}
+                                            ref={inputRefs.inputNameRef}
+                                            className="form-control"
+                                            placeholder={placeholderName}
+                                            value={nameInput}
+                                            onChange={(e) =>
+                                                setNameInput(e.target.value)
+                                            }
+                                        />
+                                    </div>
+
+                                    {/* Mô tả */}
+                                    <div className="form-group col-md-12 mt-3">
+                                        <label
+                                            htmlFor="MOTA"
+                                            className="fw-bold text-dark pb-2"
+                                        >
+                                            Mô tả
+                                        </label>
+                                        <CKEditor
+                                            editor={ClassicEditor}
+                                            data={editorData}
+                                            id="MOTA"
+                                            onChange={handleEditorChange}
+                                        />
+                                    </div>
+
+                                    {/* Người tạo */}
+                                    <div className="mt-3 form-group col-md-6">
+                                        <label
+                                            className="fw-bold text-dark pb-2"
+                                            htmlFor="NGUOITAO"
+                                        >
+                                            Người tạo:
+                                        </label>
+                                        <input
+                                            className="form-control"
+                                            id="NGUOITAO"
+                                            ref={inputRefs.inputNguoiTaoRef}
+                                            value="aaaa"
+                                            disabled
+                                        />
+                                    </div>
+
+                                    {/* Ngày tạo */}
+                                    <div className="mt-3 form-group col-md-6">
+                                        <label
+                                            className="fw-bold text-dark pb-2"
+                                            htmlFor="NGAYTAO"
+                                        >
+                                            Ngày tạo:
+                                        </label>
+                                        <input
+                                            className="form-control"
+                                            id="NGAYTAO"
+                                            ref={inputRefs.inputNgayTaoRef}
+                                            value={getDateCurrent()}
+                                            disabled
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="modal-footer justify-content-start justify-content-between">
+                                <div className="">
+                                    <button
+                                        className="btn btn-success"
+                                        onClick={handleGetValue}
+                                    >
+                                        <i
+                                            className="fas fa-plus"
+                                            style={{ paddingRight: "5px" }}
+                                        ></i>
+                                        Thêm mới
+                                    </button>
+                                </div>
+                                <button
+                                    type="button"
+                                    className="btn btn-dark"
+                                    data-bs-dismiss="modal"
+                                >
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

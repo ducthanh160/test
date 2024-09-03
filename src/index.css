@@ -12,6 +12,10 @@ a {
     text-decoration: none;
 }
 
+i {
+    cursor: pointer;
+}
+
 .logo {
     padding: 0 40px;
 }
@@ -126,4 +130,8 @@ a.sidebar-link:hover {
 }
 .sidebar-dropdown .sidebar-link:hover {
     color: #fff;
+}
+
+.ck-editor__editable_inline {
+    min-height: 150px; /* Chiều cao tối thiểu */
 }

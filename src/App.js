@@ -49,7 +49,7 @@ function App() {
                                         <li>
                                             <a
                                                 className="dropdown-item"
-                                                href="#"
+                                                href=""
                                             >
                                                 Thông tin của tôi
                                             </a>
@@ -57,7 +57,7 @@ function App() {
                                         <li>
                                             <a
                                                 className="dropdown-item"
-                                                href="#"
+                                                href=""
                                             >
                                                 Đăng xuất
                                             </a>

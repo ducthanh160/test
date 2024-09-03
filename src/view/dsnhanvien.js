@@ -20,11 +20,11 @@ function DsNhanVien() {
                                 </figure>
                                 <div className="info w-100">
                                     <div className="d-flex justify-content-between align-items-center">
-                                        <h4 className="employee_name">
+                                        <h4 className="employee_name fs-4">
                                             Tên nhân viên
                                         </h4>
                                         <div className="icon-container">
-                                            <i className="fa-solid fa-ellipsis-vertical"></i>
+                                            <i className="fa-solid fa-ellipsis-vertical fs-4"></i>
 
                                             <div className="dropdown-content">
                                                 <div
@@ -77,11 +77,11 @@ function DsNhanVien() {
                                 </figure>
                                 <div className="info w-100">
                                     <div className="d-flex justify-content-between align-items-center">
-                                        <h4 className="employee_name">
+                                        <h4 className="employee_name fs-4">
                                             Tên nhân viên
                                         </h4>
                                         <div className="icon-container">
-                                            <i className="fa-solid fa-ellipsis-vertical"></i>
+                                            <i className="fa-solid fa-ellipsis-vertical fs-4"></i>
 
                                             <div className="dropdown-content">
                                                 <div
@@ -134,11 +134,11 @@ function DsNhanVien() {
                                 </figure>
                                 <div className="info w-100">
                                     <div className="d-flex justify-content-between align-items-center">
-                                        <h4 className="employee_name">
+                                        <h4 className="employee_name fs-4">
                                             Tên nhân viên
                                         </h4>
                                         <div className="icon-container">
-                                            <i className="fa-solid fa-ellipsis-vertical"></i>
+                                            <i className="fa-solid fa-ellipsis-vertical fs-4"></i>
 
                                             <div className="dropdown-content">
                                                 <div
@@ -224,11 +224,11 @@ function DsNhanVien() {
 
                                 <div className="staff-info">
                                     <div className="staff-info_text">
-                                        <p>Tên nhân viên: Le nguyen phi hong</p>
+                                        <p>Tên nhân viên: Lê Nguyễn Phi Hồng</p>
                                         <p>Giới tính:</p>
                                         <p>Ngày sinh:</p>
                                         <p>Nơi sinh:</p>
-                                        <p>Tình trạng hôn nhân: Doc than</p>
+                                        <p>Tình trạng: Đã kết hôn</p>
                                         <p>Số CCCD:</p>
                                         <p>Ngày cấp:</p>
                                         <p>Nơi cấp:</p>
