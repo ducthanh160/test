@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import useMyComponentState from "../hooks/useMyComponentState.js";
 import {
     handleGetInputValue,
@@ -9,24 +11,26 @@ import {
     transformPhongBanData,
     transformChucVuData,
 } from "../utils/utils.js";
-import { fetchGetCode, createCategory } from "../api/service";
+import { fetchGetCode, createCategoryWithToast } from "../api/service";
 import useFetchData from "../hooks/useFetchData";
 
 function ThemNV() {
+    const [shouldFetch, setShouldFetch] = useState(false); // Trạng thái để quyết định khi nào gọi lại dữ liệu
     const [selectedPhongBan, setSelectedPhongBan] = useState("");
     const [selectedChucVu, setSelectedChucVu] = useState("");
-    const [selectedTrinhDo, setSelectedTrinhDo] = useState("");
 
-    const {
-        data: phongBanList,
-        error: phongBanError,
-        loading: phongBanLoading,
-    } = useFetchData("PhongBan", "DanhSachPB");
-    const {
-        data: chucVuList,
-        error: chucVuError,
-        loading: chucVuLoading,
-    } = useFetchData("ChucVu", "DanhSachCV");
+    const { data: phongBanList } = useFetchData(
+        "PhongBan",
+        "DanhSachPB",
+        shouldFetch,
+        setShouldFetch
+    );
+    const { data: chucVuList } = useFetchData(
+        "ChucVu",
+        "DanhSachCV",
+        shouldFetch,
+        setShouldFetch
+    );
     const {
         type,
         setType,
@@ -89,6 +93,7 @@ function ThemNV() {
 
     // hàm thêm
     const handleGetValue = async () => {
+        console.log("handleGetValue called");
         try {
             // Lấy dữ liệu từ các input và editor
             const newData = handleGetInputValue(inputRefs, editorData);
@@ -110,19 +115,23 @@ function ThemNV() {
             // Gọi hàm thêm dữ liệu vào database dựa trên loại đã chọn
             let result;
             if (type === "phongban") {
-                result = await createCategory(
+                result = await createCategoryWithToast(
                     "PhongBan",
                     "TaoPB",
                     modifiedData
                 );
             } else if (type === "chucvu") {
-                result = await createCategory("ChucVu", "TaoCV", modifiedData);
+                result = await createCategoryWithToast(
+                    "ChucVu",
+                    "TaoCV",
+                    modifiedData
+                );
             }
 
             // Kiểm tra kết quả và thông báo cho người dùng
             if (result.success) {
-                console.log("Thêm thành công:", result.data);
-
+                // console.log("Thêm thành công:", result.data);
+                setShouldFetch(true); // Đặt shouldFetch thành true
                 // Cập nhật mã mới và làm trống tên và mô tả
                 handleAddClick(type); // Cập nhật mã mới
                 setNameInput(""); // Làm trống tên
@@ -786,6 +795,7 @@ function ThemNV() {
                                         ></i>
                                         Thêm mới
                                     </button>
+                                    <ToastContainer />
                                 </div>
                                 <button
                                     type="button"

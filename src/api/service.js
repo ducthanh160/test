@@ -1,4 +1,6 @@
 import apiClient from "./apiClient";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export const fetchGetCode = async (resource, identifier) => {
     try {
@@ -52,4 +54,38 @@ export const fetchCategoryList = async (resource, identifier) => {
         console.error("Lỗi khi lấy danh sách:", error);
         throw error;
     }
+};
+
+export const createCategoryWithToast = async (
+    resource,
+    identifier,
+    newPhongBan
+) => {
+    const result = await createCategory(resource, identifier, newPhongBan);
+
+    if (result.success) {
+        toast.success("Thêm thành công", {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "colored",
+        });
+    } else {
+        toast.error("Thêm thất bại", {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "colored",
+        });
+    }
+
+    return result;
 };
