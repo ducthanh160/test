@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { fetchCategoryList } from "../api/service";
 
-const useFetchData = (category, listType, shouldFetch, setShouldFetch) => {
+const useFetchData = (category, listType, shouldRefetch) => {
     const [data, setData] = useState([]);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -17,15 +17,12 @@ const useFetchData = (category, listType, shouldFetch, setShouldFetch) => {
             setError(error.message);
         } finally {
             setLoading(false);
-            setShouldFetch(false); // Đặt lại shouldFetch về false sau khi hoàn tất
         }
     };
 
     useEffect(() => {
-        if (shouldFetch) {
-            fetchData();
-        }
-    }, [category, listType, shouldFetch]);
+        fetchData(); // Gọi hàm fetchData mỗi khi category, listType, hoặc shouldRefetch thay đổi
+    }, [category, listType, shouldRefetch]); // Thêm shouldRefetch vào dependency array
 
     return { data, error, loading };
 };

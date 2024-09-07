@@ -15,21 +15,20 @@ import { fetchGetCode, createCategoryWithToast } from "../api/service";
 import useFetchData from "../hooks/useFetchData";
 
 function ThemNV() {
-    const [shouldFetch, setShouldFetch] = useState(false); // Trạng thái để quyết định khi nào gọi lại dữ liệu
+    const [shouldRefetch, setShouldRefetch] = useState(false); // Trạng thái để quyết định khi nào cần tải lại dữ liệu
     const [selectedPhongBan, setSelectedPhongBan] = useState("");
     const [selectedChucVu, setSelectedChucVu] = useState("");
 
+    // Sử dụng shouldRefetch trong useFetchData
     const { data: phongBanList } = useFetchData(
         "PhongBan",
         "DanhSachPB",
-        shouldFetch,
-        setShouldFetch
+        shouldRefetch
     );
     const { data: chucVuList } = useFetchData(
         "ChucVu",
         "DanhSachCV",
-        shouldFetch,
-        setShouldFetch
+        shouldRefetch
     );
     const {
         type,
@@ -93,7 +92,6 @@ function ThemNV() {
 
     // hàm thêm
     const handleGetValue = async () => {
-        console.log("handleGetValue called");
         try {
             // Lấy dữ liệu từ các input và editor
             const newData = handleGetInputValue(inputRefs, editorData);
@@ -130,8 +128,7 @@ function ThemNV() {
 
             // Kiểm tra kết quả và thông báo cho người dùng
             if (result.success) {
-                // console.log("Thêm thành công:", result.data);
-                setShouldFetch(true); // Đặt shouldFetch thành true
+                setShouldRefetch((prev) => !prev);
                 // Cập nhật mã mới và làm trống tên và mô tả
                 handleAddClick(type); // Cập nhật mã mới
                 setNameInput(""); // Làm trống tên
