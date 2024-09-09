@@ -69,3 +69,21 @@ export const createCategoryWithToast = async (
     }
     return result;
 };
+
+// hàm lấy dữ liệu theo mã
+export const getDataCode = async (category, type, param, val) => {
+    const apiUrl = `/${category}/${type}?${param}`; // Xây dựng URL API
+    try {
+        const response = await apiClient.post(apiUrl, val); // Gọi hàm post từ apiClient
+        // Kiểm tra phản hồi từ API
+        if (!response || response.error) {
+            // Kiểm tra nếu phản hồi không hợp lệ hoặc có lỗi từ phía server
+            throw new Error(`HTTP error! ${response.error || "Unknown error"}`);
+        }
+
+        return response;
+    } catch (error) {
+        console.error("Lỗi khi gọi API:", error);
+        throw error;
+    }
+};

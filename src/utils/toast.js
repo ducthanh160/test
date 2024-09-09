@@ -6,7 +6,7 @@ export const showToast = (type, message) => {
     const toastType = type === "success" ? toast.success : toast.error;
     toastType(message, {
         position: "top-right",
-        autoClose: 0,
+        autoClose: 1000,
         hideProgressBar: false,
         closeOnClick: true,
         pauseOnHover: true,

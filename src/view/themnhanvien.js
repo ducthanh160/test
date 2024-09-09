@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
-import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import useMyComponentState from "../hooks/useMyComponentState.js";
 import {
@@ -11,13 +10,20 @@ import {
     transformPhongBanData,
     transformChucVuData,
 } from "../utils/utils.js";
-import { fetchGetCode, createCategoryWithToast } from "../api/service";
+import {
+    fetchGetCode,
+    createCategoryWithToast,
+    getDataCode,
+} from "../api/service";
 import useFetchData from "../hooks/useFetchData";
 
 function ThemNV() {
     const [shouldRefetch, setShouldRefetch] = useState(false); // Trạng thái để quyết định khi nào cần tải lại dữ liệu
     const [selectedPhongBan, setSelectedPhongBan] = useState("");
     const [selectedChucVu, setSelectedChucVu] = useState("");
+
+    const [nguoiTao, setNguoiTao] = useState(""); // State cho người tạo (giá trị giả sử)
+    const [ngayTao, setNgayTao] = useState(getDateCurrent()); // State cho ngày tạo
 
     // Sử dụng shouldRefetch trong useFetchData
     const { data: phongBanList } = useFetchData(
@@ -58,10 +64,86 @@ function ThemNV() {
         setNameInput,
     } = useMyComponentState();
 
+    const queryParams = {
+        PhongBan: "MAPB",
+        ChucVu: "MACV",
+        TrinhDo: "MATD",
+        ChuyenMon: "MACM",
+    };
+
+    // Hàm gọi API để lấy dữ liệu dựa vào mã
+    const fetchDataByCode = async (category, selectedCode) => {
+        try {
+            // Lấy tham số query từ đối tượng ánh xạ
+            const paramKey = queryParams[category];
+            if (!paramKey) {
+                throw new Error(`Danh mục không hợp lệ: ${category}`);
+            }
+            const type = category;
+            const param = `${paramKey}=${selectedCode}`; // Tham số query với mã đã chọn
+            const val = {}; // Dữ liệu bổ sung (nếu cần)
+
+            const data = await getDataCode(category, type, param, val);
+
+            console.log("Dữ liệu nhận được từ API:", data);
+
+            if (data && data.length > 0) {
+                const item = data[0];
+                switch (category) {
+                    case "PhongBan":
+                        setCode(item.MAPB || "");
+                        setNameInput(item.TENPB || "");
+                        if (item.MOTA !== undefined) {
+                            handleEditorChange(null, {
+                                getData: () => item.MOTA,
+                            }); // Cập nhật dữ liệu cho CKEditor
+                        }
+                        setNguoiTao(item.NGUOITAO || "");
+                        setNgayTao(item.NGAYTAO || "");
+                        break;
+                    case "ChucVu":
+                        setCode(item.code || "");
+                        setNameInput(item.name || "");
+                        if (item.description !== undefined) {
+                            handleEditorChange(null, {
+                                getData: () => item.description,
+                            }); // Cập nhật dữ liệu cho CKEditor
+                        }
+                        break;
+                    case "TrinhDo":
+                        setCode(item.code || "");
+                        setNameInput(item.name || "");
+                        if (item.description !== undefined) {
+                            handleEditorChange(null, {
+                                getData: () => item.description,
+                            }); // Cập nhật dữ liệu cho CKEditor
+                        }
+                        break;
+                    case "ChuyenMon":
+                        setCode(item.code || "");
+                        setNameInput(item.name || "");
+                        if (item.description !== undefined) {
+                            handleEditorChange(null, {
+                                getData: () => item.description,
+                            }); // Cập nhật dữ liệu cho CKEditor
+                        }
+                        break;
+                    default:
+                        console.error("Danh mục không hợp lệ");
+                }
+            } else {
+                console.warn("Không có dữ liệu để cập nhật.");
+            }
+        } catch (error) {
+            console.error("Lỗi khi lấy dữ liệu:", error);
+        }
+    };
+
     // hàm lấy mã
     const handleAddClick = async (type) => {
         setType(type);
-        // Lấy config dựa trên loại (phongban, chucvu, ...)
+
+        // Lấy config dựa trên loại
         const configData = config[type] || {};
         setCodeId(configData.codeId || "");
         setNameId(configData.nameId || "");
@@ -73,14 +155,12 @@ function ThemNV() {
 
         try {
             let data;
-            // Gọi API dựa trên loại được chọn
             if (type === "phongban") {
                 data = await fetchGetCode("PhongBan", "MaPB");
             } else if (type === "chucvu") {
                 data = await fetchGetCode("ChucVu", "MaCV");
             }
 
-            // Cập nhật mã code nếu dữ liệu và mã code là hợp lệ
             if (data && data.code) {
                 setCode(data.code);
             }
@@ -141,11 +221,11 @@ function ThemNV() {
         }
     };
 
-    const handleSelectChange = (setter, label) => (event) => {
-        setter(event.target.value);
-        console.log(`${label} được chọn:`, event.target.value);
+    const handleSelectChange = (label, setter) => (e) => {
+        const selectedValue = e.target.value;
+        setter(selectedValue); // Cập nhật state tương ứng
+        fetchDataByCode(label, selectedValue); // Gọi hàm lấy dữ liệu dựa vào giá trị được chọn
     };
-
     return (
         <div className="wrapper p-3">
             <div className="contact-form ">
@@ -420,9 +500,22 @@ function ThemNV() {
                                     className="fa-solid fa-plus text-success"
                                     data-bs-toggle="modal"
                                     data-bs-target="#staticBackdrop"
-                                    onClick={() => handleAddClick("phongban")}
+                                    onClick={() => {
+                                        setSelectedPhongBan(""); // Đặt giá trị để tránh ảnh hưởng khi thêm
+                                        handleAddClick("phongban");
+                                    }}
                                 ></i>
-                                <i className="fa-solid fa-pen text-warning"></i>
+                                <i
+                                    className="fa-solid fa-pen text-warning"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#staticBackdrop"
+                                    onClick={() =>
+                                        handleSelectChange(
+                                            "PhongBan",
+                                            setSelectedPhongBan
+                                        )
+                                    }
+                                ></i>
                             </div>
                         </div>
                         <select
@@ -431,8 +524,8 @@ function ThemNV() {
                             aria-label="Default select example"
                             value={selectedPhongBan}
                             onChange={handleSelectChange(
-                                setSelectedPhongBan,
-                                "Phòng ban"
+                                "PhongBan",
+                                setSelectedPhongBan
                             )}
                         >
                             <option value="" disabled>
@@ -492,8 +585,8 @@ function ThemNV() {
                             aria-label="Default select example"
                             value={selectedChucVu}
                             onChange={handleSelectChange(
-                                setSelectedChucVu,
-                                "Chức vụ"
+                                "ChucVu",
+                                setSelectedChucVu
                             )}
                         >
                             <option value="" disabled>
@@ -741,7 +834,12 @@ function ThemNV() {
                                             editor={ClassicEditor}
                                             data={editorData}
                                             id="MOTA"
-                                            onChange={handleEditorChange}
+                                            onChange={(event, editor) =>
+                                                handleEditorChange(
+                                                    event,
+                                                    editor
+                                                )
+                                            }
                                         />
                                     </div>
 
@@ -792,7 +890,6 @@ function ThemNV() {
                                         ></i>
                                         Thêm mới
                                     </button>
-                                    <ToastContainer />
                                 </div>
                                 <button
                                     type="button"
