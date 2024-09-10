@@ -25,20 +25,22 @@ export const createCategory = async (resource, identifier, newPhongBan) => {
 
         // Gọi API để thêm mới
         const response = await apiClient.post(url, newPhongBan);
-
         // Trả về kết quả thành công
-        return { success: true, data: response };
+        return { success: true, data: response.data };
     } catch (error) {
         // Xử lý lỗi và trả về kết quả thất bại
         console.error(
             "Lỗi khi thêm mới:",
             error.response ? error.response.data : error.message
         );
+
         return {
             success: false,
-            message: error.response
-                ? error.response.data.message
-                : error.message,
+            data: {
+                message: error.response
+                    ? error.response.data.message
+                    : error.message,
+            },
         };
     }
 };
@@ -61,11 +63,10 @@ export const createCategoryWithToast = async (
     newPhongBan
 ) => {
     const result = await createCategory(resource, identifier, newPhongBan);
-
     if (result.success) {
-        showToast("success", "Thêm thành công!");
+        showToast("success", "Thêm thành công");
     } else {
-        showToast("error", "Thêm thất bại");
+        showToast("error", result.data.message);
     }
     return result;
 };
@@ -85,5 +86,38 @@ export const getDataCode = async (category, type, param, val) => {
     } catch (error) {
         console.error("Lỗi khi gọi API:", error);
         throw error;
+    }
+};
+
+// hàm cập nhật
+export const updateCategory = async (resource, identifier, updatedData) => {
+    try {
+        // Xây dựng URL
+        const url = `/${resource}/${identifier}`;
+
+        // In URL và dữ liệu để kiểm tra
+        console.log(`Gửi yêu cầu PUT đến: ${url}`);
+        console.log("Dữ liệu cập nhật:", updatedData);
+
+        // Gọi API để cập nhật
+        const response = await apiClient.put(url, updatedData);
+
+        // Trả về kết quả thành công
+        return { success: true, data: response.data };
+    } catch (error) {
+        // Xử lý lỗi và trả về kết quả thất bại
+        console.error(
+            "Lỗi khi cập nhật:",
+            error.response ? error.response.data : error.message
+        );
+
+        return {
+            success: false,
+            data: {
+                message: error.response
+                    ? error.response.data.message
+                    : error.message,
+            },
+        };
     }
 };

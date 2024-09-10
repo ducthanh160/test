@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
-import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer } from "react-toastify";
 import useMyComponentState from "../hooks/useMyComponentState.js";
 import {
     handleGetInputValue,
@@ -84,8 +84,7 @@ function ThemNV() {
             const val = {}; // Dữ liệu bổ sung (nếu cần)
 
             const data = await getDataCode(category, type, param, val);
-
-            console.log("Dữ liệu nhận được từ API:", data);
+            // console.log("Dữ liệu nhận được từ API:", data);
 
             if (data && data.length > 0) {
                 const item = data[0];
@@ -141,7 +140,12 @@ function ThemNV() {
 
     // hàm lấy mã
     const handleAddClick = async (type) => {
-        setType(type);
+        // Đặt lại các state trước khi thực hiện hành động thêm mới
+        setSelectedPhongBan(""); // Đặt lại mã phòng ban đã chọn
+        setCode(""); // Đặt lại mã
+        setNameInput(""); // Đặt lại tên
+        handleEditorChange(null, { getData: () => "" }); // Làm trống mô tả CKEditor
+        setType(type); // Đặt lại loại (type)
 
         // Lấy config dựa trên loại
         const configData = config[type] || {};
@@ -214,7 +218,9 @@ function ThemNV() {
                 setNameInput(""); // Làm trống tên
                 handleEditorChange(null, { getData: () => "" }); // Làm trống mô tả
             } else {
-                console.error("Thêm thất bại:", result.message);
+                console.error("Thêm thất bại:", result.data.message);
+                setNameInput(""); // Làm trống tên
+                handleEditorChange(null, { getData: () => "" }); // Làm trống mô tả
             }
         } catch (error) {
             console.error("Lỗi khi thêm dữ liệu:", error);
@@ -222,6 +228,7 @@ function ThemNV() {
     };
 
     const handleSelectChange = (label, setter) => (e) => {
+        console.log(label, setter);
         const selectedValue = e.target.value;
         setter(selectedValue); // Cập nhật state tương ứng
         fetchDataByCode(label, selectedValue); // Gọi hàm lấy dữ liệu dựa vào giá trị được chọn
@@ -501,7 +508,6 @@ function ThemNV() {
                                     data-bs-toggle="modal"
                                     data-bs-target="#staticBackdrop"
                                     onClick={() => {
-                                        setSelectedPhongBan(""); // Đặt giá trị để tránh ảnh hưởng khi thêm
                                         handleAddClick("phongban");
                                     }}
                                 ></i>
@@ -509,12 +515,14 @@ function ThemNV() {
                                     className="fa-solid fa-pen text-warning"
                                     data-bs-toggle="modal"
                                     data-bs-target="#staticBackdrop"
-                                    onClick={() =>
-                                        handleSelectChange(
+                                    onClick={() => {
+                                        const selectedCode = selectedPhongBan; // Mã được chọn hiện tại
+                                        fetchDataByCode(
                                             "PhongBan",
-                                            setSelectedPhongBan
-                                        )
-                                    }
+                                            selectedCode,
+                                            "edit"
+                                        ); // Gọi hàm fetchDataByCode với mã được chọn
+                                    }}
                                 ></i>
                             </div>
                         </div>
@@ -523,10 +531,15 @@ function ThemNV() {
                             className="form-select"
                             aria-label="Default select example"
                             value={selectedPhongBan}
-                            onChange={handleSelectChange(
-                                "PhongBan",
-                                setSelectedPhongBan
-                            )}
+                            onChange={(e) => {
+                                const selectedCode = e.target.value; // Lấy mã được chọn
+                                setSelectedPhongBan(selectedCode); // Cập nhật state cho mã phòng ban
+                                fetchDataByCode(
+                                    "PhongBan",
+                                    selectedCode,
+                                    "edit"
+                                ); // Gọi hàm fetchDataByCode với mã được chọn
+                            }}
                         >
                             <option value="" disabled>
                                 --- Chọn phòng ban ---
@@ -890,6 +903,7 @@ function ThemNV() {
                                         ></i>
                                         Thêm mới
                                     </button>
+                                    <ToastContainer />
                                 </div>
                                 <button
                                     type="button"

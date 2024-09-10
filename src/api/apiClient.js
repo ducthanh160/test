@@ -10,8 +10,12 @@ const apiClient = async (endpoint, options = {}) => {
 
         // Kiểm tra nếu phản hồi không OK
         if (!response.ok) {
-            const errorText = await response.text(); // Đọc phản hồi dưới dạng text
-            throw new Error(`Có lỗi xảy ra từ server: ${errorText}`);
+            try {
+                const errorData = await response.json(); // Đọc phản hồi dưới dạng JSON
+                throw new Error(errorData.message || "Có lỗi xảy ra từ server"); // Lấy thông báo lỗi từ server
+            } catch (e) {
+                throw new Error(e.message); // Nếu không parse được JSON, sử dụng thông báo lỗi mặc định
+            }
         }
 
         // Nếu phản hồi có nội dung, phân tích nó dưới dạng JSON
