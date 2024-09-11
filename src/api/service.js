@@ -121,3 +121,18 @@ export const updateCategory = async (resource, identifier, updatedData) => {
         };
     }
 };
+
+// Cập nhật
+export const updateCategoryWithToast = async (
+    resource,
+    identifier,
+    newChucVu
+) => {
+    const result = await updateCategory(resource, identifier, newChucVu);
+    if (result.success) {
+        showToast("success", "Cập nhật thành công");
+    } else {
+        showToast("error", result.data.message);
+    }
+    return result;
+};

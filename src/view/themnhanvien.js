@@ -14,14 +14,16 @@ import {
     fetchGetCode,
     createCategoryWithToast,
     getDataCode,
+    updateCategoryWithToast,
 } from "../api/service";
 import useFetchData from "../hooks/useFetchData";
 
 function ThemNV() {
     const [shouldRefetch, setShouldRefetch] = useState(false); // Trạng thái để quyết định khi nào cần tải lại dữ liệu
+    const [isEditing, setIsEditing] = useState(false); // Trạng thái để kiểm tra đang trong chế độ chỉnh sửa hay thêm mới
     const [selectedPhongBan, setSelectedPhongBan] = useState("");
     const [selectedChucVu, setSelectedChucVu] = useState("");
-
+    // const [selectedTrinhDo, selectedTrinhDo] = useState("");
     const [nguoiTao, setNguoiTao] = useState(""); // State cho người tạo (giá trị giả sử)
     const [ngayTao, setNgayTao] = useState(getDateCurrent()); // State cho ngày tạo
 
@@ -72,18 +74,34 @@ function ThemNV() {
     };
 
     // Hàm gọi API để lấy dữ liệu dựa vào mã
-    const fetchDataByCode = async (category, selectedCode) => {
+    const fetchDataByCode = async (
+        type,
+        category,
+        selectedCode,
+        actionType
+    ) => {
+        setIsEditing(true);
+        const configData = config[type] || {};
+        const title =
+            actionType === "add"
+                ? `Thêm ${configData.name}`
+                : `${configData.modalTitleFix}`;
+        setModalTitle(title);
+        setLabelTitle(configData.labelTitle || "");
+        setName(configData.name || "");
+        setPlaceholderCode(configData.placeholderCode || "");
+        setPlaceholderName(configData.placeholderName || "");
         try {
             // Lấy tham số query từ đối tượng ánh xạ
             const paramKey = queryParams[category];
             if (!paramKey) {
                 throw new Error(`Danh mục không hợp lệ: ${category}`);
             }
-            const type = category;
+            const resource = category;
             const param = `${paramKey}=${selectedCode}`; // Tham số query với mã đã chọn
             const val = {}; // Dữ liệu bổ sung (nếu cần)
 
-            const data = await getDataCode(category, type, param, val);
+            const data = await getDataCode(category, resource, param, val);
             // console.log("Dữ liệu nhận được từ API:", data);
 
             if (data && data.length > 0) {
@@ -101,11 +119,11 @@ function ThemNV() {
                         setNgayTao(item.NGAYTAO || "");
                         break;
                     case "ChucVu":
-                        setCode(item.code || "");
-                        setNameInput(item.name || "");
-                        if (item.description !== undefined) {
+                        setCode(item.MACV || "");
+                        setNameInput(item.TENCV || "");
+                        if (item.MOTA !== undefined) {
                             handleEditorChange(null, {
-                                getData: () => item.description,
+                                getData: () => item.MOTA,
                             }); // Cập nhật dữ liệu cho CKEditor
                         }
                         break;
@@ -140,8 +158,10 @@ function ThemNV() {
 
     // hàm lấy mã
     const handleAddClick = async (type) => {
+        setIsEditing(false);
         // Đặt lại các state trước khi thực hiện hành động thêm mới
-        setSelectedPhongBan(""); // Đặt lại mã phòng ban đã chọn
+        setSelectedPhongBan(""); // Đặt lại mã đã chọn
+        setSelectedChucVu("");
         setCode(""); // Đặt lại mã
         setNameInput(""); // Đặt lại tên
         handleEditorChange(null, { getData: () => "" }); // Làm trống mô tả CKEditor
@@ -194,25 +214,44 @@ function ThemNV() {
                 modifiedData = transformChucVuData(newData);
             }
 
-            // Gọi hàm thêm dữ liệu vào database dựa trên loại đã chọn
+            // Xác định hành động: thêm mới hoặc cập nhật
             let result;
-            if (type === "phongban") {
-                result = await createCategoryWithToast(
-                    "PhongBan",
-                    "TaoPB",
-                    modifiedData
-                );
-            } else if (type === "chucvu") {
-                result = await createCategoryWithToast(
-                    "ChucVu",
-                    "TaoCV",
-                    modifiedData
-                );
+            if (isEditing) {
+                // Nếu đang chỉnh sửa, gọi hàm cập nhật
+                if (type === "phongban") {
+                    result = await updateCategoryWithToast(
+                        "PhongBan",
+                        "CapNhatPB", // Identifier cho cập nhật phòng ban
+                        modifiedData
+                    );
+                } else if (type === "chucvu") {
+                    result = await updateCategoryWithToast(
+                        "ChucVu",
+                        "CapNhatCV", // Identifier cho cập nhật chức vụ
+                        modifiedData
+                    );
+                }
+            } else {
+                // Nếu không, gọi hàm thêm mới
+                if (type === "phongban") {
+                    result = await createCategoryWithToast(
+                        "PhongBan",
+                        "TaoPB", // Identifier cho thêm mới phòng ban
+                        modifiedData
+                    );
+                } else if (type === "chucvu") {
+                    result = await createCategoryWithToast(
+                        "ChucVu",
+                        "TaoCV", // Identifier cho thêm mới chức vụ
+                        modifiedData
+                    );
+                }
             }
 
             // Kiểm tra kết quả và thông báo cho người dùng
             if (result.success) {
                 setShouldRefetch((prev) => !prev);
+                setIsEditing(false);
                 // Cập nhật mã mới và làm trống tên và mô tả
                 handleAddClick(type); // Cập nhật mã mới
                 setNameInput(""); // Làm trống tên
@@ -225,13 +264,6 @@ function ThemNV() {
         } catch (error) {
             console.error("Lỗi khi thêm dữ liệu:", error);
         }
-    };
-
-    const handleSelectChange = (label, setter) => (e) => {
-        console.log(label, setter);
-        const selectedValue = e.target.value;
-        setter(selectedValue); // Cập nhật state tương ứng
-        fetchDataByCode(label, selectedValue); // Gọi hàm lấy dữ liệu dựa vào giá trị được chọn
     };
     return (
         <div className="wrapper p-3">
@@ -518,6 +550,7 @@ function ThemNV() {
                                     onClick={() => {
                                         const selectedCode = selectedPhongBan; // Mã được chọn hiện tại
                                         fetchDataByCode(
+                                            "phongban",
                                             "PhongBan",
                                             selectedCode,
                                             "edit"
@@ -535,6 +568,7 @@ function ThemNV() {
                                 const selectedCode = e.target.value; // Lấy mã được chọn
                                 setSelectedPhongBan(selectedCode); // Cập nhật state cho mã phòng ban
                                 fetchDataByCode(
+                                    "phongban",
                                     "PhongBan",
                                     selectedCode,
                                     "edit"
@@ -589,7 +623,20 @@ function ThemNV() {
                                     data-bs-target="#staticBackdrop"
                                     onClick={() => handleAddClick("chucvu")}
                                 ></i>
-                                <i className="fa-solid fa-pen text-warning"></i>
+                                <i
+                                    className="fa-solid fa-pen text-warning"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#staticBackdrop"
+                                    onClick={() => {
+                                        const selectedCode = selectedChucVu;
+                                        fetchDataByCode(
+                                            "chucvu",
+                                            "ChucVu",
+                                            selectedCode,
+                                            "edit"
+                                        );
+                                    }}
+                                ></i>
                             </div>
                         </div>
                         <select
@@ -597,10 +644,16 @@ function ThemNV() {
                             className="form-select"
                             aria-label="Default select example"
                             value={selectedChucVu}
-                            onChange={handleSelectChange(
-                                "ChucVu",
-                                setSelectedChucVu
-                            )}
+                            onChange={(e) => {
+                                const selectedCode = e.target.value;
+                                setSelectedChucVu(selectedCode);
+                                fetchDataByCode(
+                                    "chucvu",
+                                    "ChucVu",
+                                    selectedCode,
+                                    "edit"
+                                );
+                            }}
                         >
                             <option value="" disabled>
                                 --- Chọn chức vụ ---
@@ -901,7 +954,7 @@ function ThemNV() {
                                             className="fas fa-plus"
                                             style={{ paddingRight: "5px" }}
                                         ></i>
-                                        Thêm mới
+                                        {isEditing ? "Cập nhật" : "Thêm mới"}
                                     </button>
                                     <ToastContainer />
                                 </div>

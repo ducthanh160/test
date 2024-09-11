@@ -34,4 +34,13 @@ apiClient.get = (endpoint) => apiClient(endpoint, { method: "GET" });
 apiClient.post = (endpoint, body) =>
     apiClient(endpoint, { method: "POST", body: JSON.stringify(body) });
 
+// Định nghĩa hàm put cho apiClient
+apiClient.put = (endpoint, body) =>
+    apiClient(endpoint, {
+        method: "PUT",
+        body: JSON.stringify(body),
+        headers: {
+            "Content-Type": "application/json", // Đảm bảo Content-Type là JSON
+        },
+    });
 export default apiClient;
