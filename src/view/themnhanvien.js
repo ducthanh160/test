@@ -80,29 +80,40 @@ function ThemNV() {
         selectedCode,
         actionType
     ) => {
-        setIsEditing(true);
-        const configData = config[type] || {};
-        const title =
-            actionType === "add"
-                ? `Thêm ${configData.name}`
-                : `${configData.modalTitleFix}`;
-        setModalTitle(title);
-        setLabelTitle(configData.labelTitle || "");
-        setName(configData.name || "");
-        setPlaceholderCode(configData.placeholderCode || "");
-        setPlaceholderName(configData.placeholderName || "");
         try {
-            // Lấy tham số query từ đối tượng ánh xạ
+            // Thiết lập type trước khi thực hiện bất kỳ hành động nào
+            setType(type);
+
+            // Thiết lập trạng thái là đang chỉnh sửa và modal title
+            setIsEditing(actionType === "edit");
+            const configData = config[type] || {};
+
+            // Thiết lập tiêu đề modal dựa trên actionType
+            const title =
+                actionType === "add"
+                    ? `Thêm ${configData.name}`
+                    : `${configData.modalTitleFix}`;
+            setModalTitle(title);
+
+            // Thiết lập các giá trị liên quan đến modal
+            setLabelTitle(configData.labelTitle || "");
+            setName(configData.name || "");
+            setPlaceholderCode(configData.placeholderCode || "");
+            setPlaceholderName(configData.placeholderName || "");
+
+            // Xác định tham số query từ đối tượng ánh xạ
             const paramKey = queryParams[category];
             if (!paramKey) {
                 throw new Error(`Danh mục không hợp lệ: ${category}`);
             }
+
             const resource = category;
             const param = `${paramKey}=${selectedCode}`; // Tham số query với mã đã chọn
             const val = {}; // Dữ liệu bổ sung (nếu cần)
 
+            // Gọi API để lấy dữ liệu theo mã
             const data = await getDataCode(category, resource, param, val);
-            // console.log("Dữ liệu nhận được từ API:", data);
+            console.log("Dữ liệu nhận được từ API:", data);
 
             if (data && data.length > 0) {
                 const item = data[0];
@@ -113,40 +124,36 @@ function ThemNV() {
                         if (item.MOTA !== undefined) {
                             handleEditorChange(null, {
                                 getData: () => item.MOTA,
-                            }); // Cập nhật dữ liệu cho CKEditor
+                            });
                         }
                         setNguoiTao(item.NGUOITAO || "");
                         setNgayTao(item.NGAYTAO || "");
                         break;
+
                     case "ChucVu":
                         setCode(item.MACV || "");
                         setNameInput(item.TENCV || "");
                         if (item.MOTA !== undefined) {
                             handleEditorChange(null, {
                                 getData: () => item.MOTA,
-                            }); // Cập nhật dữ liệu cho CKEditor
+                            });
                         }
                         break;
+
                     case "TrinhDo":
-                        setCode(item.code || "");
-                        setNameInput(item.name || "");
-                        if (item.description !== undefined) {
-                            handleEditorChange(null, {
-                                getData: () => item.description,
-                            }); // Cập nhật dữ liệu cho CKEditor
-                        }
-                        break;
                     case "ChuyenMon":
                         setCode(item.code || "");
                         setNameInput(item.name || "");
                         if (item.description !== undefined) {
                             handleEditorChange(null, {
                                 getData: () => item.description,
-                            }); // Cập nhật dữ liệu cho CKEditor
+                            });
                         }
                         break;
+
                     default:
                         console.error("Danh mục không hợp lệ");
+                        break;
                 }
             } else {
                 console.warn("Không có dữ liệu để cập nhật.");
@@ -195,13 +202,14 @@ function ThemNV() {
     };
 
     // hàm thêm
-    const handleGetValue = async () => {
+    const handleAddValue = async () => {
         try {
             // Lấy dữ liệu từ các input và editor
             const newData = handleGetInputValue(inputRefs, editorData);
 
             // Kiểm tra xem loại dữ liệu đã được xác định chưa
             if (!type) {
+                console.log(type);
                 console.error("Loại dữ liệu không xác định.");
                 return;
             }
@@ -214,45 +222,25 @@ function ThemNV() {
                 modifiedData = transformChucVuData(newData);
             }
 
-            // Xác định hành động: thêm mới hoặc cập nhật
+            // Gọi hàm thêm mới
             let result;
-            if (isEditing) {
-                // Nếu đang chỉnh sửa, gọi hàm cập nhật
-                if (type === "phongban") {
-                    result = await updateCategoryWithToast(
-                        "PhongBan",
-                        "CapNhatPB", // Identifier cho cập nhật phòng ban
-                        modifiedData
-                    );
-                } else if (type === "chucvu") {
-                    result = await updateCategoryWithToast(
-                        "ChucVu",
-                        "CapNhatCV", // Identifier cho cập nhật chức vụ
-                        modifiedData
-                    );
-                }
-            } else {
-                // Nếu không, gọi hàm thêm mới
-                if (type === "phongban") {
-                    result = await createCategoryWithToast(
-                        "PhongBan",
-                        "TaoPB", // Identifier cho thêm mới phòng ban
-                        modifiedData
-                    );
-                } else if (type === "chucvu") {
-                    result = await createCategoryWithToast(
-                        "ChucVu",
-                        "TaoCV", // Identifier cho thêm mới chức vụ
-                        modifiedData
-                    );
-                }
+            if (type === "phongban") {
+                result = await createCategoryWithToast(
+                    "PhongBan",
+                    "TaoPB",
+                    modifiedData
+                );
+            } else if (type === "chucvu") {
+                result = await createCategoryWithToast(
+                    "ChucVu",
+                    "TaoCV",
+                    modifiedData
+                );
             }
 
             // Kiểm tra kết quả và thông báo cho người dùng
             if (result.success) {
                 setShouldRefetch((prev) => !prev);
-                setIsEditing(false);
-                // Cập nhật mã mới và làm trống tên và mô tả
                 handleAddClick(type); // Cập nhật mã mới
                 setNameInput(""); // Làm trống tên
                 handleEditorChange(null, { getData: () => "" }); // Làm trống mô tả
@@ -263,6 +251,67 @@ function ThemNV() {
             }
         } catch (error) {
             console.error("Lỗi khi thêm dữ liệu:", error);
+        }
+    };
+    // hàm cập nhật
+    const handleUpdateValue = async () => {
+        try {
+            // Lấy dữ liệu từ các input và editor
+            const newData = handleGetInputValue(inputRefs, editorData);
+
+            // Kiểm tra xem loại dữ liệu đã được xác định chưa
+            if (!type) {
+                console.log(type);
+                console.error("Loại dữ liệu không xác định.");
+                return;
+            }
+
+            // Chỉnh sửa dữ liệu dựa trên loại
+            let modifiedData;
+            if (type === "phongban") {
+                modifiedData = transformPhongBanData(newData);
+            } else if (type === "chucvu") {
+                modifiedData = transformChucVuData(newData);
+            }
+
+            // Gọi hàm cập nhật
+            let result;
+            if (type === "phongban") {
+                result = await updateCategoryWithToast(
+                    "PhongBan",
+                    "CapNhatPB",
+                    modifiedData
+                );
+            } else if (type === "chucvu") {
+                result = await updateCategoryWithToast(
+                    "ChucVu",
+                    "CapNhatCV",
+                    modifiedData
+                );
+            }
+
+            // Kiểm tra kết quả và thông báo cho người dùng
+            if (result.success) {
+                setShouldRefetch((prev) => !prev);
+                setIsEditing(false);
+                // handleAddClick(type); // Cập nhật mã mới
+                setNameInput(""); // Làm trống tên
+                handleEditorChange(null, { getData: () => "" }); // Làm trống mô tả
+            } else {
+                console.error("Cập nhật thất bại:", result.data.message);
+                setNameInput(""); // Làm trống tên
+                handleEditorChange(null, { getData: () => "" }); // Làm trống mô tả
+            }
+        } catch (error) {
+            console.error("Lỗi khi cập nhật dữ liệu:", error);
+        }
+    };
+
+    const handleSubmit = async () => {
+        if (isEditing) {
+            await handleUpdateValue();
+        } else {
+            await handleAddValue();
         }
     };
     return (
@@ -948,7 +997,7 @@ function ThemNV() {
                                 <div className="">
                                     <button
                                         className="btn btn-success"
-                                        onClick={handleGetValue}
+                                        onClick={handleSubmit}
                                     >
                                         <i
                                             className="fas fa-plus"
