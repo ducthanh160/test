@@ -1,6 +1,7 @@
 import apiClient from "./apiClient";
 import { showToast } from "../utils/toast";
 
+// hàm lấy mã
 export const fetchGetCode = async (resource, identifier) => {
     try {
         // Tạo URL động dựa trên các tham số đầu vào
@@ -101,7 +102,7 @@ export const updateCategory = async (resource, identifier, updatedData) => {
 
         // Gọi API để cập nhật
         const response = await apiClient.put(url, updatedData);
-
+        console.log("Đây là response", response);
         // Trả về kết quả thành công
         return { success: true, data: response.data };
     } catch (error) {

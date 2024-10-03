@@ -122,19 +122,69 @@ export const config = {
 };
 
 // Hàm chuyển đổi dữ liệu cho phòng ban
-export const transformPhongBanData = (newData) => ({
-    MaPB: newData.codeValue,
-    TenPB: newData.nameValue,
-    MoTa: newData.plainText,
-    NguoiTao: newData.nguoiTaoValue,
-    NgayTao: newData.ngayTaoValue,
-});
+export const transformPhongBanData = (newData) => {
+    // Chuyển đổi giá trị ngày thành chuỗi ISO hợp lệ
+    let ngayTaoValue = newData.ngayTaoValue;
+
+    // Kiểm tra nếu chuỗi có giá trị và định dạng không phải ISO
+    if (!ngayTaoValue) {
+        throw new Error("NgayTao is required");
+    }
+
+    // Chuyển định dạng từ 'dd-MM-yyyy HH:mm:ss' sang 'yyyy-MM-ddTHH:mm:ss'
+    const [day, month, yearAndTime] = ngayTaoValue.split("-");
+    const [year, time] = yearAndTime.split(" ");
+
+    // Tạo định dạng 'yyyy-MM-ddTHH:mm:ss' cho JavaScript
+    const formattedNgayTao = `${year}-${month}-${day}T${time}`;
+
+    // Chuyển đổi chuỗi thành đối tượng Date
+    let ngayTao = new Date(formattedNgayTao);
+
+    // Kiểm tra nếu chuyển đổi không thành công
+    if (isNaN(ngayTao.getTime())) {
+        throw new Error(`Invalid date value for NgayTao: ${ngayTaoValue}`);
+    }
+
+    return {
+        MaPB: newData.codeValue,
+        TenPB: newData.nameValue,
+        MoTa: newData.plainText,
+        NguoiTao: newData.nguoiTaoValue,
+        NgayTao: ngayTao.toISOString(), // Chuyển về ISO String cho JSON
+    };
+};
 
 // Hàm chuyển đổi dữ liệu cho chức vụ
-export const transformChucVuData = (newData) => ({
-    MaCV: newData.codeValue,
-    TenCV: newData.nameValue,
-    MoTa: newData.plainText,
-    NguoiTao: newData.nguoiTaoValue,
-    NgayTao: newData.ngayTaoValue,
-});
+export const transformChucVuData = (newData) => {
+    // Chuyển đổi giá trị ngày thành chuỗi ISO hợp lệ
+    let ngayTaoValue = newData.ngayTaoValue;
+
+    // Kiểm tra nếu chuỗi có giá trị và định dạng không phải ISO
+    if (!ngayTaoValue) {
+        throw new Error("NgayTao is required");
+    }
+
+    // Chuyển định dạng từ 'dd-MM-yyyy HH:mm:ss' sang 'yyyy-MM-ddTHH:mm:ss'
+    const [day, month, yearAndTime] = ngayTaoValue.split("-");
+    const [year, time] = yearAndTime.split(" ");
+
+    // Tạo định dạng 'yyyy-MM-ddTHH:mm:ss' cho JavaScript
+    const formattedNgayTao = `${year}-${month}-${day}T${time}`;
+
+    // Chuyển đổi chuỗi thành đối tượng Date
+    let ngayTao = new Date(formattedNgayTao);
+
+    // Kiểm tra nếu chuyển đổi không thành công
+    if (isNaN(ngayTao.getTime())) {
+        throw new Error(`Invalid date value for NgayTao: ${ngayTaoValue}`);
+    }
+
+    return {
+        MaCV: newData.codeValue,
+        TenCV: newData.nameValue,
+        MoTa: newData.plainText,
+        NguoiTao: newData.nguoiTaoValue,
+        NgayTao: ngayTao.toISOString(), // Chuyển về ISO String cho JSON
+    };
+};

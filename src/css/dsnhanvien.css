@@ -109,7 +109,7 @@
 }
 
 .modal {
-    --bs-modal-margin: 3.75rem;
+    --bs-modal-margin: 4.75rem;
 }
 .modal-dialog {
     pointer-events: none;
