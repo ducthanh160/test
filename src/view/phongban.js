@@ -1,9 +1,6 @@
 import React, { useRef, useState } from "react";
-import { SearchOutlined } from "@ant-design/icons";
-import { Button, Input, Space, Table } from "antd";
-import Highlighter from "react-highlight-words";
 import { ToastContainer } from "react-toastify";
-import useMyComponentState from "../hooks/useMyComponentState.js";
+import useFetchData from "../hooks/useFetchData.js";
 import {
     handleGetInputValue,
     getDateCurrent,
@@ -17,183 +14,27 @@ import {
     getDataCode,
     updateCategoryWithToast,
 } from "../api/service";
-import useFetchData from "../hooks/useFetchData";
-
-const data = [
-    {
-        key: "1",
-        name: "John Brown",
-        age: 32,
-        address: "New York No. 1 Lake Park",
-    },
-    {
-        key: "2",
-        name: "Jim Green",
-        age: 42,
-        address: "London No. 1 Lake Park",
-    },
-    {
-        key: "3",
-        name: "Joe Black",
-        age: 32,
-        address: "Sydney No. 1 Lake Park",
-    },
-    {
-        key: "4",
-        name: "Jim Red",
-        age: 32,
-        address: "London No. 2 Lake Park",
-    },
+import DataTable from "react-data-table-component";
+const columns = [
+    { name: "Title", selector: (row) => row.title, sortable: true },
+    { name: "Year", selector: (row) => row.year, sortable: true },
 ];
 
+const data = [
+    { id: 1, title: "Conan the Barbarian", year: "1982" },
+    { id: 2, title: "Die Hard", year: "1988" },
+    { id: 3, title: "Die Hard", year: "1988" },
+    { id: 4, title: "Die Hard", year: "1988" },
+    { id: 5, title: "Die Hard", year: "1988" },
+    { id: 6, title: "Die Hard", year: "1988" },
+    { id: 7, title: "Die Hard", year: "1988" },
+    { id: 8, title: "Die Hard", year: "1988" },
+    { id: 9, title: "Die Hard", year: "1988" },
+    { id: 10, title: "Die Hard", year: "1988" },
+    { id: 11, title: "Die Hard", year: "1988" },
+    { id: 12, title: "Die Hard", year: "1988" },
+];
 function PhongBan() {
-    const [searchText, setSearchText] = useState("");
-    const [searchedColumn, setSearchedColumn] = useState("");
-    const searchInput = useRef(null);
-    const handleSearch = (selectedKeys, confirm, dataIndex) => {
-        confirm();
-        setSearchText(selectedKeys[0]);
-        setSearchedColumn(dataIndex);
-    };
-    const handleReset = (clearFilters) => {
-        clearFilters();
-        setSearchText("");
-    };
-    const getColumnSearchProps = (dataIndex) => ({
-        filterDropdown: ({
-            setSelectedKeys,
-            selectedKeys,
-            confirm,
-            clearFilters,
-            close,
-        }) => (
-            <div
-                style={{
-                    padding: 8,
-                }}
-                onKeyDown={(e) => e.stopPropagation()}
-            >
-                <Input
-                    ref={searchInput}
-                    placeholder={`Search ${dataIndex}`}
-                    value={selectedKeys[0]}
-                    onChange={(e) =>
-                        setSelectedKeys(e.target.value ? [e.target.value] : [])
-                    }
-                    onPressEnter={() =>
-                        handleSearch(selectedKeys, confirm, dataIndex)
-                    }
-                    style={{
-                        marginBottom: 8,
-                        display: "block",
-                    }}
-                />
-                <Space>
-                    <Button
-                        type="primary"
-                        onClick={() =>
-                            handleSearch(selectedKeys, confirm, dataIndex)
-                        }
-                        icon={<SearchOutlined />}
-                        size="small"
-                        style={{
-                            width: 90,
-                        }}
-                    >
-                        Search
-                    </Button>
-                    <Button
-                        onClick={() =>
-                            clearFilters && handleReset(clearFilters)
-                        }
-                        size="small"
-                        style={{
-                            width: 90,
-                        }}
-                    >
-                        Reset
-                    </Button>
-                    <Button
-                        type="link"
-                        size="small"
-                        onClick={() => {
-                            confirm({
-                                closeDropdown: false,
-                            });
-                            setSearchText(selectedKeys[0]);
-                            setSearchedColumn(dataIndex);
-                        }}
-                    >
-                        Filter
-                    </Button>
-                    <Button
-                        type="link"
-                        size="small"
-                        onClick={() => {
-                            close();
-                        }}
-                    >
-                        close
-                    </Button>
-                </Space>
-            </div>
-        ),
-        filterIcon: (filtered) => (
-            <SearchOutlined
-                style={{
-                    color: filtered ? "#1677ff" : undefined,
-                }}
-            />
-        ),
-        onFilter: (value, record) =>
-            record[dataIndex]
-                .toString()
-                .toLowerCase()
-                .includes(value.toLowerCase()),
-        onFilterDropdownOpenChange: (visible) => {
-            if (visible) {
-                setTimeout(() => searchInput.current?.select(), 100);
-            }
-        },
-        render: (text) =>
-            searchedColumn === dataIndex ? (
-                <Highlighter
-                    highlightStyle={{
-                        backgroundColor: "#ffc069",
-                        padding: 0,
-                    }}
-                    searchWords={[searchText]}
-                    autoEscape
-                    textToHighlight={text ? text.toString() : ""}
-                />
-            ) : (
-                text
-            ),
-    });
-    const columns = [
-        {
-            title: "Name",
-            dataIndex: "name",
-            key: "name",
-            width: "30%",
-            ...getColumnSearchProps("name"),
-        },
-        {
-            title: "Age",
-            dataIndex: "age",
-            key: "age",
-            width: "20%",
-            ...getColumnSearchProps("age"),
-        },
-        {
-            title: "Address",
-            dataIndex: "address",
-            key: "address",
-            ...getColumnSearchProps("address"),
-            sorter: (a, b) => a.address.length - b.address.length,
-            sortDirections: ["descend", "ascend"],
-        },
-    ];
     // Tạo một state để lưu trữ giá trị được chọn
     const [selectedValue, setSelectedValue] = useState("");
     const [code, setCode] = useState("");
@@ -336,6 +177,8 @@ function PhongBan() {
                     </option>
                 ))}
             </select>
+
+            {/* Thêm phòng ban */}
             <div
                 className="modal fade"
                 id="PhongBanModal"
@@ -352,7 +195,7 @@ function PhongBan() {
                                 className="modal-title fs-5"
                                 id="staticBackdropLabel"
                             >
-                                {modalTitle}
+                                Thêm phòng ban
                             </h1>
                             <button
                                 type="button"
@@ -479,7 +322,7 @@ function PhongBan() {
                     </div>
                 </div>
             </div>
-            <Table columns={columns} dataSource={data} />;
+
             <div
                 className="modal fade"
                 id="SuaPhongBanModal"
@@ -496,7 +339,7 @@ function PhongBan() {
                                 className="modal-title fs-5"
                                 id="staticBackdropLabel"
                             >
-                                {modalTitle}
+                                Sửa phòng ban
                             </h1>
                             <button
                                 type="button"
@@ -505,7 +348,13 @@ function PhongBan() {
                                 aria-label="Close"
                             ></button>
                         </div>
-                        <div className="modal-body"></div>
+                        <div className="modal-body">
+                            <DataTable
+                                columns={columns}
+                                data={data}
+                                pagination
+                            />
+                        </div>
                     </div>
                 </div>
             </div>
