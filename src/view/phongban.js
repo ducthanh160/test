@@ -1,58 +1,135 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ToastContainer } from "react-toastify";
-import useFetchData from "../hooks/useFetchData.js";
-import {
-    handleGetInputValue,
-    getDateCurrent,
-    config,
-    transformPhongBanData,
-    transformChucVuData,
-} from "../utils/utils.js";
+import { showToast } from "../utils/toast";
+import { getDateCurrent } from "../utils/utils.js";
 import {
     fetchGetCode,
     createCategoryWithToast,
     getDataCode,
-    updateCategoryWithToast,
+    updateCategory,
 } from "../api/service";
-import DataTable from "react-data-table-component";
-const columns = [
-    { name: "Title", selector: (row) => row.title, sortable: true },
-    { name: "Year", selector: (row) => row.year, sortable: true },
-];
-
-const data = [
-    { id: 1, title: "Conan the Barbarian", year: "1982" },
-    { id: 2, title: "Die Hard", year: "1988" },
-    { id: 3, title: "Die Hard", year: "1988" },
-    { id: 4, title: "Die Hard", year: "1988" },
-    { id: 5, title: "Die Hard", year: "1988" },
-    { id: 6, title: "Die Hard", year: "1988" },
-    { id: 7, title: "Die Hard", year: "1988" },
-    { id: 8, title: "Die Hard", year: "1988" },
-    { id: 9, title: "Die Hard", year: "1988" },
-    { id: 10, title: "Die Hard", year: "1988" },
-    { id: 11, title: "Die Hard", year: "1988" },
-    { id: 12, title: "Die Hard", year: "1988" },
-];
+import { fetchCategoryList } from "../api/service";
+import { AgGridReact } from "ag-grid-react";
+import "ag-grid-community/styles/ag-grid.css";
+import "ag-grid-community/styles/ag-theme-alpine.css";
 function PhongBan() {
-    // Tạo một state để lưu trữ giá trị được chọn
+    const [rowData, setRowData] = useState([]);
+
+    const [columnDefs] = useState([
+        { headerName: "Mã phòng ban", field: "MAPB", flex: 1 },
+        {
+            headerName: "Tên phòng ban",
+            field: "TENPB",
+            editable: true,
+            flex: 1,
+        },
+        {
+            headerName: "Ghi chú",
+            field: "MOTA",
+            editable: true,
+            flex: 1,
+        },
+        {
+            headerName: "Người tạo",
+            field: "NGUOITAO",
+            flex: 1,
+        },
+        {
+            headerName: "Ngày tạo",
+            field: "NGAYTAO",
+            flex: 1,
+        },
+        {
+            headerName: "Người sửa",
+            field: "NGUOISUA",
+            flex: 1,
+        },
+        {
+            headerName: "Ngày sửa",
+            field: "NGAYSUA",
+            flex: 1,
+        },
+        {
+            headerName: "Tác vụ",
+            field: "TACVU",
+            flex: 1,
+            cellRenderer: (params) => (
+                <div>
+                    <button
+                        onClick={() => handleDelete(params.data)} // Gọi hàm xóa
+                        style={{
+                            backgroundColor: "transparent",
+                            border: "none",
+                            cursor: "pointer",
+                            // marginLeft: "10px",
+                        }}
+                    >
+                        <i className="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            ),
+        },
+    ]);
+
+    const handleDelete = (rowData) => {
+        console.log("Xóa hàng:", rowData);
+        // Thực hiện hành động xóa
+    };
+    // Đối tượng chứa các văn bản tiếng Việt
+    const localeText = {
+        page: "Trang",
+        more: "Thêm",
+        to: "đến",
+        of: "của",
+        next: "Tiếp theo",
+        last: "Cuối cùng",
+        first: "Đầu tiên",
+        previous: "Trước đó",
+        loadingOoo: "Đang tải...",
+        noRowsToShow: "Không có hàng để hiển thị",
+    };
+    const [categoryList, setCategoryList] = useState([]);
     const [selectedValue, setSelectedValue] = useState("");
     const [code, setCode] = useState("");
     const [tenPhongBan, setTenPhongBan] = useState("");
-    const [ghiChu, setGhiChu] = useState("");
+    const [MoTa, setMoTa] = useState("");
     const [nguoiTao, setNguoiTao] = useState("aaa");
     const [ngayTao, setNgayTao] = useState(getDateCurrent()); // State cho ngày tạo
-    const [shouldRefetch, setShouldRefetch] = useState(false); // Trạng thái để quyết định khi nào cần tải lại dữ liệu
-    const [selectedPhongBan, setSelectedPhongBan] = useState("");
-    const [isEditing, setIsEditing] = useState(false); // Trạng thái để kiểm tra đang trong chế độ chỉnh sửa hay thêm mới
-    const [modalTitle, setModalTitle] = useState(false); // Trạng thái để kiểm tra đang trong chế độ chỉnh sửa hay thêm mới
 
-    // Sử dụng shouldRefetch trong useFetchData
-    const { data: phongBanList } = useFetchData(
-        "PhongBan",
-        "DanhSachPB",
-        shouldRefetch
-    );
+    // Hàm xử lý khi giá trị của ô bị thay đổi
+    const handleCellValueChanged = async (params) => {
+        // Gọi API cập nhật
+        try {
+            const resource = "PhongBan"; // Giả sử đây là resource
+            const identifier = "CapNhatPB"; // Giả sử ID của hàng là identifier
+            const updatedData = params.data; // Dữ liệu sau khi chỉnh sửa
+
+            // Gọi hàm cập nhật API
+            const result = await updateCategory(
+                resource,
+                identifier,
+                updatedData
+            );
+            if (result.success) {
+                showToast("success", result.data);
+                loadCategoryList();
+            } else {
+                showToast("error", result.data.message);
+            }
+        } catch (error) {
+            console.error("Lỗi khi cập nhật dữ liệu:", error);
+        }
+    };
+
+    // Hàm gọi API và cập nhật state
+    const loadCategoryList = async () => {
+        try {
+            const response = await fetchCategoryList("PhongBan", "DanhSachPB");
+            setCategoryList(response); // Giả sử dữ liệu API trả về ở response.data
+        } catch (error) {
+            console.error("Lỗi khi lấy danh sách phòng ban:", error);
+        }
+    };
 
     const handleAddClick = async () => {
         try {
@@ -73,7 +150,7 @@ function PhongBan() {
             const modifiedData = {
                 MAPB: code,
                 TENPB: tenPhongBan,
-                MOTA: ghiChu,
+                MOTA: MoTa,
                 NGUOITAO: nguoiTao,
                 NGAYTAO: ngayTao,
                 NGUOISUA: null,
@@ -88,10 +165,9 @@ function PhongBan() {
             );
             // Kiểm tra kết quả và thông báo cho người dùng
             if (result.success) {
-                setShouldRefetch((prev) => !prev);
                 handleAddClick(); // Cập nhật mã mới
                 setTenPhongBan("");
-                setGhiChu("");
+                setMoTa("");
             } else {
                 console.error("Thêm thất bại:", result.data.message);
             }
@@ -100,36 +176,31 @@ function PhongBan() {
         }
     };
 
-    // Hàm gọi API để lấy dữ liệu dựa vào mã
-    const fetchDataByCode = async (category, selectedCode) => {
-        try {
-            const resource = category;
-            const param = `MAPB=${selectedCode}`; // Tham số query với mã đã chọn
-            const val = {}; // Dữ liệu bổ sung (nếu cần)
-
-            // Gọi API để lấy dữ liệu theo mã
-            const data = await getDataCode(category, resource, param, val);
-            console.log("Dữ liệu nhận được từ API:", data);
-
-            if (data && data.length > 0) {
-                const item = data[0];
-                setCode(item.MAPB || "");
-                setTenPhongBan(item.TENPB || "");
-                setNguoiTao(item.NGUOITAO || "");
-                setNgayTao(item.NGAYTAO || "");
-            } else {
-                console.warn("Không có dữ liệu để cập nhật.");
-            }
-        } catch (error) {
-            console.error("Lỗi khi lấy dữ liệu:", error);
-        }
-    };
-
     // Hàm xử lý sự kiện khi thay đổi lựa chọn
     const handleSelectChange = (event) => {
         setSelectedValue(event.target.value); // Lưu giá trị được chọn vào state
         console.log(event.target.value);
     };
+    // Gọi API khi component được mount
+    useEffect(() => {
+        loadCategoryList(); // Chỉ gọi 1 lần khi component mount
+    }, []); // [] đảm bảo chỉ chạy 1 lần khi component mount
+
+    // Cập nhật rowData khi categoryList thay đổi
+    useEffect(() => {
+        if (categoryList && categoryList.length > 0) {
+            const updatedRowData = categoryList.map((item) => ({
+                MAPB: item.MAPB,
+                TENPB: item.TENPB,
+                MOTA: item.MOTA,
+                NGUOITAO: item.NGUOITAO,
+                NGAYTAO: item.NGAYTAO,
+                NGUOISUA: item.NGUOISUA,
+                NGAYSUA: item.NGAYSUA,
+            }));
+            setRowData(updatedRowData); // Cập nhật dữ liệu vào state rowData
+        }
+    }, [categoryList]); // Chỉ khi categoryList thay đổi mới cập nhật rowData
     return (
         <>
             <div className="pb-2 d-flex align-items-center justify-content-between">
@@ -137,22 +208,18 @@ function PhongBan() {
                     Phòng ban
                 </label>
                 <div className="d-flex gap-2">
-                    <i
+                    {/* <i
                         className="fa-solid fa-plus text-success"
                         data-bs-toggle="modal"
                         data-bs-target="#PhongBanModal"
                         onClick={() => {
                             handleAddClick();
                         }}
-                    ></i>
+                    ></i> */}
                     <i
                         className="fa-solid fa-pen text-warning"
                         data-bs-toggle="modal"
                         data-bs-target="#SuaPhongBanModal"
-                        onClick={() => {
-                            const selectedCode = selectedPhongBan; // Mã được chọn hiện tại
-                            fetchDataByCode("PhongBan", selectedCode); // Gọi hàm fetchDataByCode với mã được chọn
-                        }}
                     ></i>
                 </div>
             </div>
@@ -160,18 +227,12 @@ function PhongBan() {
                 id="PHONGBAN"
                 className="form-select"
                 aria-label="Default select example"
-                // defaultValue=""
-                value={selectedValue} // Gán giá trị từ state
-                onChange={(e) => {
-                    const selectedCode = e.target.value; // Lấy mã được chọn
-                    setSelectedPhongBan(selectedCode); // Cập nhật state cho mã phòng ban
-                    fetchDataByCode("PhongBan", selectedCode, "edit"); // Gọi hàm fetchDataByCode với mã được chọn
-                }}
+                defaultValue=""
             >
                 <option value="" disabled>
                     --- Chọn phòng ban ---
                 </option>
-                {phongBanList.map((pb) => (
+                {categoryList.map((pb) => (
                     <option key={pb.MAPB} value={pb.MAPB}>
                         {pb.TENPB}
                     </option>
@@ -244,16 +305,16 @@ function PhongBan() {
                                 <div className="mt-3 form-group col-md-12">
                                     <label
                                         className="fw-bold text-dark pb-2"
-                                        htmlFor="GHICHU"
+                                        htmlFor="MOTA"
                                     >
-                                        Ghi chú
+                                        Mô tả
                                     </label>
                                     <textarea
-                                        id="GHICHU"
+                                        id="MOTA"
                                         className="form-control"
-                                        value={ghiChu}
+                                        value={MoTa}
                                         onChange={(e) =>
-                                            setGhiChu(e.target.value)
+                                            setMoTa(e.target.value)
                                         }
                                     ></textarea>
                                 </div>
@@ -300,14 +361,13 @@ function PhongBan() {
                             <div className="">
                                 <button
                                     className="btn btn-success"
-                                    // onClick={handleSubmit}
                                     onClick={handleAddValue}
                                 >
                                     <i
                                         className="fas fa-plus"
                                         style={{ paddingRight: "5px" }}
                                     ></i>
-                                    {/* {isEditing ? "Cập nhật" : "Thêm mới"} */}
+                                    Thêm mới
                                 </button>
                                 <ToastContainer />
                             </div>
@@ -335,11 +395,21 @@ function PhongBan() {
                 <div className="modal-dialog modal-xl">
                     <div className="modal-content">
                         <div className="modal-header">
+                            <i
+                                style={{ paddingRight: "5px" }}
+                                className="fa-solid fa-plus text-success"
+                                data-bs-toggle="modal"
+                                data-bs-target="#PhongBanModal"
+                                onClick={() => {
+                                    handleAddClick();
+                                }}
+                                title="Thêm mới"
+                            ></i>
                             <h1
                                 className="modal-title fs-5"
                                 id="staticBackdropLabel"
                             >
-                                Sửa phòng ban
+                                Phòng ban
                             </h1>
                             <button
                                 type="button"
@@ -348,12 +418,21 @@ function PhongBan() {
                                 aria-label="Close"
                             ></button>
                         </div>
-                        <div className="modal-body">
-                            <DataTable
-                                columns={columns}
-                                data={data}
-                                pagination
+                        <div
+                            className="modal-body ag-theme-alpine"
+                            style={{ height: 400, width: "100%" }}
+                        >
+                            <AgGridReact
+                                rowData={rowData}
+                                columnDefs={columnDefs}
+                                pagination={true}
+                                paginationPageSize={6}
+                                // paginationPageSizeSelector={[5, 10]}
+                                localeText={localeText}
+                                rowSelection="none"
+                                onCellValueChanged={handleCellValueChanged}
                             />
+                            <ToastContainer />
                         </div>
                     </div>
                 </div>

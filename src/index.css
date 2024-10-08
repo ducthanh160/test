@@ -135,3 +135,12 @@ a.sidebar-link:hover {
 .ck-editor__editable_inline {
     min-height: 150px; /* Chiều cao tối thiểu */
 }
+
+.ag-picker-field {
+    display: none !important;
+}
+@media (min-width: 1200px) {
+    .modal-xl {
+        --bs-modal-width: 1200px;
+    }
+}

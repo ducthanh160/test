@@ -82,7 +82,6 @@ export const getDataCode = async (category, type, param, val) => {
             // Kiểm tra nếu phản hồi không hợp lệ hoặc có lỗi từ phía server
             throw new Error(`HTTP error! ${response.error || "Unknown error"}`);
         }
-
         return response;
     } catch (error) {
         console.error("Lỗi khi gọi API:", error);
@@ -96,15 +95,14 @@ export const updateCategory = async (resource, identifier, updatedData) => {
         // Xây dựng URL
         const url = `/${resource}/${identifier}`;
 
-        // In URL và dữ liệu để kiểm tra
-        console.log(`Gửi yêu cầu PUT đến: ${url}`);
+        // In dữ liệu để kiểm tra
         console.log("Dữ liệu cập nhật:", updatedData);
 
         // Gọi API để cập nhật
         const response = await apiClient.put(url, updatedData);
-        console.log("Đây là response", response);
+        console.log("Đây là response", response.Message);
         // Trả về kết quả thành công
-        return { success: true, data: response.data };
+        return { success: true, data: response.Message };
     } catch (error) {
         // Xử lý lỗi và trả về kết quả thất bại
         console.error(
